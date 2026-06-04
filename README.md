@@ -15,9 +15,18 @@ To add a post, create a Markdown file in `src/content/blog`:
 title: "post title"
 date: "2026-06-03"
 description: "short index text"
+tags: ["essay", "notes"]
 ---
 
 Body text here.
+```
+
+Tags can also be written as a block list:
+
+```md
+tags:
+  - essay
+  - notes
 ```
 
 The filename becomes the route. For example, `src/content/blog/notes.md` becomes

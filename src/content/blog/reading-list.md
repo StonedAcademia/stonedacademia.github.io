@@ -2,6 +2,7 @@
 title: "reading list"
 date: "2026-06-02"
 description: "A second post so the index has more than one entry."
+tags: ["reading", "notes"]
 ---
 
 An example list of things to replace.

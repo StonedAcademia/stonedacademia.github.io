@@ -2,6 +2,7 @@
 title: "first post"
 date: "2026-06-03"
 description: "A starter Markdown file wired to /blog/first-post.md."
+tags: ["markdown", "math", "graphviz"]
 ---
 
 This is a Markdown post.

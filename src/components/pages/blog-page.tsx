@@ -30,6 +30,18 @@ export function BlogPage({
             {post.date}
           </time>
         ) : null}
+        {post.tags.length ? (
+          <div className="flex flex-wrap gap-2">
+            {post.tags.map((tag) => (
+              <span
+                className="max-w-full truncate rounded-sm border border-border px-2 py-1 text-xs text-primary"
+                key={tag}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <ReactMarkdown
