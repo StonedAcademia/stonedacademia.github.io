@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  [data-theme="paper"] {
+    --background: 210 20% 98%;
+    --foreground: 222 18% 14%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 222 9% 42%;
+    --border: 222 11% 82%;
+    --input: 222 11% 82%;
+    --ring: 196 86% 40%;
+    --primary: 196 86% 35%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 47 92% 90%;
+    --accent-foreground: 222 18% 14%;
+  }
+
+  [data-theme="ink"] {
+    --background: 230 16% 9%;
+    --foreground: 48 24% 92%;
+    --muted: 230 12% 15%;
+    --muted-foreground: 48 10% 68%;
+    --border: 230 9% 25%;
+    --input: 230 9% 25%;
+    --ring: 16 90% 62%;
+    --primary: 16 90% 62%;
+    --primary-foreground: 230 16% 9%;
+    --accent: 172 43% 18%;
+    --accent-foreground: 48 24% 92%;
+  }
+
+  [data-theme="terminal"] {
+    --background: 128 33% 6%;
+    --foreground: 112 44% 86%;
+    --muted: 128 25% 12%;
+    --muted-foreground: 112 22% 68%;
+    --border: 128 20% 24%;
+    --input: 128 20% 24%;
+    --ring: 146 78% 51%;
+    --primary: 146 78% 51%;
+    --primary-foreground: 128 33% 6%;
+    --accent: 54 72% 18%;
+    --accent-foreground: 112 44% 86%;
+  }
+
+  [data-theme="signal"] {
+    --background: 0 0% 99%;
+    --foreground: 260 13% 12%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 260 8% 42%;
+    --border: 220 10% 80%;
+    --input: 220 10% 80%;
+    --ring: 341 82% 48%;
+    --primary: 341 82% 48%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 176 67% 89%;
+    --accent-foreground: 260 13% 12%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background font-mono text-foreground;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+}
+
+@layer components {
+  .markdown {
+    @apply space-y-6 text-sm leading-7 text-foreground;
+  }
+
+  .markdown h1,
+  .markdown h2,
+  .markdown h3 {
+    @apply font-semibold leading-tight text-foreground;
+  }
+
+  .markdown h1 {
+    @apply text-2xl;
+  }
+
+  .markdown h2 {
+    @apply pt-4 text-xl;
+  }
+
+  .markdown h3 {
+    @apply pt-2 text-base;
+  }
+
+  .markdown p,
+  .markdown li {
+    @apply text-muted-foreground;
+  }
+
+  .markdown a {
+    @apply text-primary underline decoration-dotted underline-offset-4 hover:decoration-solid;
+  }
+
+  .markdown ul,
+  .markdown ol {
+    @apply ml-5 space-y-2;
+  }
+
+  .markdown ul {
+    @apply list-disc;
+  }
+
+  .markdown ol {
+    @apply list-decimal;
+  }
+
+  .markdown blockquote {
+    @apply border-l border-border pl-4 text-muted-foreground;
+  }
+
+  .markdown code {
+    @apply rounded-sm bg-muted px-1 py-0.5 text-foreground;
+  }
+
+  .markdown pre {
+    @apply overflow-x-auto border border-border bg-muted p-4 text-sm leading-6;
+  }
+
+  .markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .markdown hr {
+    @apply border-border;
+  }
+}

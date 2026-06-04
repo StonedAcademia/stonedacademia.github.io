@@ -1,0 +1,57 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+import { TextLink } from "@/components/shell/text-link";
+import type { BlogPost } from "@/lib/blog";
+import type { Navigate } from "@/lib/navigation";
+
+export function BlogPage({
+  navigate,
+  post,
+}: {
+  navigate: Navigate;
+  post: BlogPost;
+}) {
+  return (
+    <article>
+      <div className="mb-10 space-y-3 border-l border-border pl-4">
+        <p className="text-xs text-muted-foreground">{post.path}</p>
+        <h1 className="text-2xl font-semibold leading-tight">{post.title}</h1>
+        {post.description ? (
+          <p className="text-sm leading-6 text-muted-foreground">
+            {post.description}
+          </p>
+        ) : null}
+        {post.date ? (
+          <time className="block text-xs text-muted-foreground">
+            {post.date}
+          </time>
+        ) : null}
+      </div>
+
+      <ReactMarkdown
+        className="markdown"
+        components={{
+          a({ children, href }) {
+            if (href?.startsWith("/")) {
+              return (
+                <TextLink href={href} navigate={navigate}>
+                  {children}
+                </TextLink>
+              );
+            }
+
+            return (
+              <a href={href} rel="noreferrer" target="_blank">
+                {children}
+              </a>
+            );
+          },
+        }}
+        remarkPlugins={[remarkGfm]}
+      >
+        {post.body}
+      </ReactMarkdown>
+    </article>
+  );
+}
