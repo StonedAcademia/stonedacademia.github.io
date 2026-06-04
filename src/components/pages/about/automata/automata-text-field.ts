@@ -1,9 +1,11 @@
 import {
   clearMaskedCells,
   indexOf,
+  SPAWNER_BLOCKER_PADDING_CELLS,
   type AutomataState,
 } from "./automata-model";
 
+const BLOCKER_SELECTOR = "[data-automata-blocker='spawner']";
 const TEXT_FIELD_SELECTOR = "[data-automata-field='about']";
 
 export function refreshTextField(state: AutomataState) {
@@ -27,11 +29,23 @@ export function refreshTextField(state: AutomataState) {
     }
   }
 
+  const blockerElements = document.querySelectorAll<HTMLElement>(
+    BLOCKER_SELECTOR,
+  );
+
+  for (const element of blockerElements) {
+    const rect = element.getBoundingClientRect();
+
+    if (rect.width > 0 && rect.height > 0) {
+      markBlockerRadius(state, rect);
+    }
+  }
+
   clearMaskedCells(state);
 }
 
 function markTextRect(state: AutomataState, rect: DOMRect) {
-  const padding = Math.max(10, state.cellSize * 1.5);
+  const padding = Math.max(2, state.cellSize * 0.5);
   const left = Math.max(0, Math.floor((rect.left - padding) / state.cellSize));
   const right = Math.min(
     state.cols - 1,
@@ -70,4 +84,34 @@ function markTextRect(state: AutomataState, rect: DOMRect) {
     { direction: "sw", x: edgeLeft, y: edgeBottom - 3 },
     { direction: "se", x: edgeRight - 3, y: edgeBottom - 3 },
   );
+}
+
+function markBlockerRadius(state: AutomataState, rect: DOMRect) {
+  const centerX = (rect.left + rect.right) / 2;
+  const centerY = (rect.top + rect.bottom) / 2;
+  const radius =
+    Math.max(rect.width, rect.height) / 2 +
+    SPAWNER_BLOCKER_PADDING_CELLS * state.cellSize;
+  const left = Math.max(0, Math.floor((centerX - radius) / state.cellSize));
+  const right = Math.min(
+    state.cols - 1,
+    Math.ceil((centerX + radius) / state.cellSize),
+  );
+  const top = Math.max(0, Math.floor((centerY - radius) / state.cellSize));
+  const bottom = Math.min(
+    state.rows - 1,
+    Math.ceil((centerY + radius) / state.cellSize),
+  );
+
+  for (let y = top; y <= bottom; y += 1) {
+    for (let x = left; x <= right; x += 1) {
+      const cellCenterX = x * state.cellSize + state.cellSize / 2;
+      const cellCenterY = y * state.cellSize + state.cellSize / 2;
+      const distance = Math.hypot(cellCenterX - centerX, cellCenterY - centerY);
+
+      if (distance <= radius) {
+        state.mask[indexOf(state, x, y)] = 1;
+      }
+    }
+  }
 }

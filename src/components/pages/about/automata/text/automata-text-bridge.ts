@@ -32,10 +32,13 @@ export class AutomataTextBridge {
       const rect = span.getBoundingClientRect();
       const text = span.textContent ?? "";
 
-      const x1 = Math.max(0, Math.floor(rect.left / state.cellSize));
-      const y1 = Math.max(0, Math.floor(rect.top / state.cellSize));
-      const x2 = Math.min(state.cols - 1, Math.ceil(rect.right / state.cellSize));
-      const y2 = Math.min(state.rows - 1, Math.ceil(rect.bottom / state.cellSize));
+      // Expand window 4 cells outward so feedback reads from the live area
+      // outside the mask, not from the masked (always-dead) interior.
+      const expansion = 4;
+      const x1 = Math.max(0, Math.floor(rect.left / state.cellSize) - expansion);
+      const y1 = Math.max(0, Math.floor(rect.top / state.cellSize) - expansion);
+      const x2 = Math.min(state.cols - 1, Math.ceil(rect.right / state.cellSize) + expansion);
+      const y2 = Math.min(state.rows - 1, Math.ceil(rect.bottom / state.cellSize) + expansion);
 
       this.chars.push({
         cellWindowX1: x1,
