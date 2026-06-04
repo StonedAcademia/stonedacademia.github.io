@@ -203,6 +203,11 @@
   transition: opacity 300ms ease, filter 300ms ease, color 300ms ease;
 }
 
+[data-automata-word] {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .automata-collision {
   animation: automata-scale-pulse 500ms ease-out forwards;
   color: hsl(var(--primary));
@@ -213,4 +218,26 @@
   0%   { transform: scale(1); }
   25%  { transform: scale(1.18); }
   100% { transform: scale(1); }
+}
+
+/* KaTeX glyph collision — brightness pulse (transform: scale doesn't apply to inline spans) */
+.katex-html .automata-collision {
+  animation: automata-katex-pulse 500ms ease-out forwards;
+  color: hsl(var(--primary));
+}
+
+@keyframes automata-katex-pulse {
+  0%   { filter: brightness(2.2); }
+  100% { filter: brightness(1); }
+}
+
+/* Graphviz node collision — opacity flash + primary glow */
+g.node.automata-collision {
+  animation: automata-node-pulse 500ms ease-out forwards;
+}
+
+@keyframes automata-node-pulse {
+  0%   { opacity: 0.55; }
+  25%  { opacity: 1; filter: drop-shadow(0 0 4px hsl(var(--primary) / 0.75)); }
+  100% { opacity: 1; filter: none; }
 }
