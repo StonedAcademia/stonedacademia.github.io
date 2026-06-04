@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/** Class-variance model for the site's shadcn-style button primitive. */
 const buttonVariants = cva(
   "motion-button inline-flex items-center justify-center whitespace-nowrap rounded-sm border border-transparent text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
   {
@@ -29,12 +30,15 @@ const buttonVariants = cva(
   },
 );
 
+/** Props accepted by `Button`, including variant styles and optional slotting. */
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
+  /** Render the child element through Radix Slot instead of a native button. */
   asChild?: boolean;
 }
 
+/** Reusable button primitive that can render as a Radix Slot when needed. */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";

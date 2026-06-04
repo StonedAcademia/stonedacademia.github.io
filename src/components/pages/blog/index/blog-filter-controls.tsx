@@ -6,19 +6,31 @@ import { PretextText } from "@/lib/pretext/pretext-text";
 
 import type { BlogFilters } from "./blog-index-filtering";
 
+/** Props for the controlled blog index search, date, and tag controls. */
 type BlogFilterControlsProps = {
+  /** Tags available across the unfiltered post set. */
   allTags: string[];
+  /** Number of posts currently visible after filtering. */
   filteredPostCount: number;
+  /** Current controlled filter values. */
   filters: BlogFilters;
+  /** Whether the clear button should be enabled. */
   hasFilters: boolean;
+  /** Clears all controlled filters. */
   onClearFilters: () => void;
+  /** Updates the inclusive upper date bound. */
   onEndDateChange: (value: string) => void;
+  /** Updates the free-text query. */
   onQueryChange: (value: string) => void;
+  /** Updates or clears the active tag. */
   onSelectedTagChange: (value: string) => void;
+  /** Updates the inclusive lower date bound. */
   onStartDateChange: (value: string) => void;
+  /** Number of posts before filtering. */
   totalPostCount: number;
 };
 
+/** Controlled filter toolbar for the blog index. */
 export function BlogFilterControls({
   allTags,
   filteredPostCount,
@@ -124,6 +136,7 @@ export function BlogFilterControls({
   );
 }
 
+/** Exposes the list position used by CSS staggered motion. */
 function motionStyle(index: number) {
   return { "--item-index": index } as CSSProperties;
 }

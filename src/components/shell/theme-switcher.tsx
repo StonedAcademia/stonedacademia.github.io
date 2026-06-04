@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { themeOptions, type ThemeId } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 
+/** Props for the floating theme menu. */
+type ThemeSwitcherProps = {
+  /** Active theme id. */
+  theme: ThemeId;
+  /** Setter returned by `useTheme`. */
+  setTheme: (theme: ThemeId) => void;
+};
+
+/** Floating menu for switching the root `data-theme` value. */
 export function ThemeSwitcher({
   theme,
   setTheme,
-}: {
-  theme: ThemeId;
-  setTheme: (theme: ThemeId) => void;
-}) {
+}: ThemeSwitcherProps) {
   const [open, setOpen] = useState(false);
 
   return (

@@ -13,6 +13,7 @@ import {
 } from "./blog-index-filtering";
 import { BlogPostList } from "./blog-post-list";
 
+/** Empty filter object reused when initializing and clearing the index. */
 const emptyFilters: BlogFilters = {
   endDate: "",
   query: "",
@@ -20,13 +21,21 @@ const emptyFilters: BlogFilters = {
   startDate: "",
 };
 
+/** Props for the blog index route. */
+type BlogIndexPageProps = {
+  /** Internal navigation callback for post links. */
+  navigate: Navigate;
+  /** Posts already sorted in the display order expected by the index. */
+  sortedPosts: BlogPost[];
+};
+
+/**
+ * Stateful blog index that wires filter controls to the sorted post list.
+ */
 export function BlogIndexPage({
   navigate,
   sortedPosts,
-}: {
-  navigate: Navigate;
-  sortedPosts: BlogPost[];
-}) {
+}: BlogIndexPageProps) {
   const [filters, setFilters] = useState<BlogFilters>(emptyFilters);
   const allTags = useMemo(() => allPostTags(sortedPosts), [sortedPosts]);
   const filteredPosts = useMemo(() => {
@@ -34,6 +43,7 @@ export function BlogIndexPage({
   }, [filters, sortedPosts]);
   const hasFilters = filtersAreActive(filters);
 
+  /** Updates one filter key while preserving the rest of the controlled state. */
   function updateFilter(key: keyof BlogFilters, value: string) {
     setFilters((currentFilters) => ({
       ...currentFilters,
@@ -76,6 +86,7 @@ export function BlogIndexPage({
   );
 }
 
+/** Exposes the block position used by CSS staggered motion. */
 function motionStyle(index: number) {
   return { "--item-index": index } as CSSProperties;
 }

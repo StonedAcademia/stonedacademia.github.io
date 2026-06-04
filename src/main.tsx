@@ -10,6 +10,7 @@ import "./lib/styles/page-surfaces.css";
 import "./lib/styles/pages/automata-specimen.css";
 import "./lib/styles/markdown.css";
 
+/** Mounts the React app after global theme, motion, Markdown, and KaTeX styles. */
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />

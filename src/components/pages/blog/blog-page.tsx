@@ -10,13 +10,25 @@ import { MarkdownPre } from "@/lib/markdown/markdown-pre";
 import type { Navigate } from "@/lib/navigation";
 import { PretextText } from "@/lib/pretext/pretext-text";
 
+/** Props for rendering one parsed Markdown post. */
+type BlogPageProps = {
+  /** Internal navigation callback for same-site Markdown links. */
+  navigate: Navigate;
+  /** Parsed post metadata and Markdown body. */
+  post: BlogPost;
+};
+
+/**
+ * Renders one Markdown post with local-link navigation and enhanced prose blocks.
+ *
+ * @remarks
+ * Markdown headings, paragraphs, and list items pass raw text to `PretextText`
+ * for measurement while preserving the original React Markdown children.
+ */
 export function BlogPage({
   navigate,
   post,
-}: {
-  navigate: Navigate;
-  post: BlogPost;
-}) {
+}: BlogPageProps) {
   return (
     <article className="motion-page">
       <div className="motion-rail motion-block mb-10 space-y-3 border-l border-border pl-4">
@@ -138,6 +150,7 @@ export function BlogPage({
   );
 }
 
+/** Extracts plain text from React Markdown children for layout measurement. */
 function textFromChildren(children: ReactNode): string {
   if (
     children === null ||

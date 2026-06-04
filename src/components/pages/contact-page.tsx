@@ -3,6 +3,7 @@ import { ExternalLink, Github, Twitter } from "lucide-react";
 
 import { PretextText } from "@/lib/pretext/pretext-text";
 
+/** External contact links displayed by the contact page. */
 const contacts = [
   {
     href: "https://twitter.com/TheSolomonSwan",
@@ -18,6 +19,7 @@ const contacts = [
   },
 ];
 
+/** Renders the public contact destinations with motion-aware list rows. */
 export function ContactPage() {
   return (
     <section className="motion-page">

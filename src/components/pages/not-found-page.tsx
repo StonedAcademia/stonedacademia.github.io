@@ -1,13 +1,19 @@
 import { TextLink } from "@/components/shell/text-link";
 import type { Navigate } from "@/lib/navigation";
 
+/** Props for the fallback route page. */
+type NotFoundPageProps = {
+  /** Internal navigation callback for the home link. */
+  navigate: Navigate;
+  /** Unmatched path shown to the user. */
+  path: string;
+};
+
+/** Fallback page for paths that the small SPA router does not recognize. */
 export function NotFoundPage({
   navigate,
   path,
-}: {
-  navigate: Navigate;
-  path: string;
-}) {
+}: NotFoundPageProps) {
   return (
     <section className="motion-page space-y-5">
       <p className="text-xs uppercase tracking-normal text-muted-foreground">

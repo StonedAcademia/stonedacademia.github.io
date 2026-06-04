@@ -4,6 +4,7 @@ import { TextLink } from "@/components/shell/text-link";
 import type { Navigate } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
+/** Header navigation model, including active-route matching rules. */
 const navItems = [
   {
     href: "/",
@@ -29,13 +30,19 @@ const navItems = [
   },
 ];
 
+/** Props for the primary header navigation. */
+type SiteHeaderProps = {
+  /** SPA navigation callback used by internal links. */
+  navigate: Navigate;
+  /** Current path used to set active navigation state. */
+  pathname: string;
+};
+
+/** Renders the primary site navigation with SPA-aware links. */
 export function SiteHeader({
   navigate,
   pathname,
-}: {
-  navigate: Navigate;
-  pathname: string;
-}) {
+}: SiteHeaderProps) {
   return (
     <header className="motion-header mb-12 flex items-center gap-4 text-xs text-muted-foreground">
       {navItems.map((item, itemIndex) => {

@@ -7,13 +7,19 @@ import type { Navigate } from "@/lib/navigation";
 import { PretextText } from "@/lib/pretext/pretext-text";
 import { cn } from "@/lib/utils";
 
+/** Props for the rendered, already-filtered post list. */
 type BlogPostListProps = {
+  /** Internal navigation callback for post links. */
   navigate: Navigate;
+  /** Promotes a clicked tag into the index filter state. */
   onSelectTag: (tag: string) => void;
+  /** Posts to display in their existing order. */
   posts: BlogPost[];
+  /** Active tag used to style matching chips. */
   selectedTag: string;
 };
 
+/** Renders post summaries and tag shortcuts for the blog index. */
 export function BlogPostList({
   navigate,
   onSelectTag,
@@ -81,6 +87,7 @@ export function BlogPostList({
   );
 }
 
+/** Exposes the item position used by CSS staggered motion. */
 function motionStyle(index: number) {
   return { "--item-index": index } as CSSProperties;
 }

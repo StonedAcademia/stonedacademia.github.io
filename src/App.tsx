@@ -11,6 +11,13 @@ import { posts } from "@/lib/blog";
 import { usePathname } from "@/lib/navigation";
 import { useTheme } from "@/lib/themes";
 
+/**
+ * Selects the active page for the static GitHub Pages app.
+ *
+ * @remarks
+ * The build copies `index.html` to `404.html`, so direct deep links still
+ * boot this component and route from `window.location.pathname`.
+ */
 export default function App() {
   const { pathname, navigate } = usePathname();
   const { theme, setTheme } = useTheme();
@@ -46,6 +53,13 @@ export default function App() {
   );
 }
 
+/**
+ * Converts supported blog URLs into either the blog index marker or a post slug.
+ *
+ * @remarks
+ * Both `/blog/name` and `/blog/name.md` resolve to the same Markdown post so
+ * author-facing filenames and cleaner links can coexist.
+ */
 function postSlugFromPath(pathname: string) {
   if (pathname === "/blog" || pathname === "/blog/") {
     return { isIndex: true, slug: undefined };
