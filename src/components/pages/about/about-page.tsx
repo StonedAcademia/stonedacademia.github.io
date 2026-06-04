@@ -8,7 +8,7 @@ import { PretextText } from "@/lib/pretext/pretext-text";
 
 const aboutEquation = String.raw`$$
 \begin{aligned}
-  \int
+  \int_V
 \end{aligned}
 $$`;
 
