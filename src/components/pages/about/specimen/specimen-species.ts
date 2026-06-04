@@ -10,9 +10,9 @@ import {
 export const SPECIMEN_CELL_SIZE = 7;
 export const SPECIMEN_COLS = 17;
 export const SPECIMEN_ROWS = 17;
-export const STEP_INTERVAL_MS = 82;
-export const CYCLE_INTERVAL_MS = 5000;
-export const FADE_DURATION_MS = 600;
+export const STEP_INTERVAL_MS = 110;
+export const CYCLE_INTERVAL_MS = 6500;
+export const FADE_DURATION_MS = 900;
 
 export type SpeciesVariable = {
   meaning: string;

@@ -9,6 +9,11 @@ import {
 
 import type { AutomataState } from "../automata/automata-model";
 import {
+  captureVisualGeneration,
+  type AutomataVisualState,
+} from "../automata/rendering/automata-visual-state";
+import {
+  createSpecimenVisualState,
   createSpecimenState,
   drawSpecimen,
   seedSpecies,
@@ -29,6 +34,9 @@ type TooltipSide = "left" | "right";
 export function useSpecimenController() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<AutomataState>(createSpecimenState());
+  const visualStateRef = useRef<AutomataVisualState>(
+    createSpecimenVisualState(stateRef.current),
+  );
   const speciesIndexRef = useRef(0);
   const tooltipOpenRef = useRef(false);
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -73,6 +81,7 @@ export function useSpecimenController() {
     const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let animationFrame = 0;
+    let lastRender = performance.now();
     let lastStep = 0;
 
     canvas.width = Math.floor(
@@ -84,14 +93,24 @@ export function useSpecimenController() {
     canvasContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     stateRef.current = createSpecimenState();
     seedSpecies(stateRef.current, species);
+    visualStateRef.current = createSpecimenVisualState(stateRef.current);
 
     function animate(now: number) {
+      const deltaMs = Math.min(now - lastRender, 48);
+      lastRender = now;
+
       if (!reducedMotion.matches && now - lastStep > STEP_INTERVAL_MS) {
         stepSpecimen(stateRef.current);
+        captureVisualGeneration(visualStateRef.current, stateRef.current);
         lastStep = now;
       }
 
-      drawSpecimen(canvasContext, stateRef.current);
+      drawSpecimen(
+        canvasContext,
+        stateRef.current,
+        visualStateRef.current,
+        reducedMotion.matches ? 1000 / 300 : deltaMs,
+      );
       animationFrame = window.requestAnimationFrame(animate);
     }
 

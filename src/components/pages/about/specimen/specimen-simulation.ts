@@ -4,6 +4,13 @@ import {
   type AutomataState,
 } from "../automata/automata-model";
 import {
+  cellBreath,
+  createVisualState,
+  updateVisualState,
+  type AutomataVisualState,
+} from "../automata/rendering/automata-visual-state";
+import { fillRoundedRect } from "../automata/rendering/rounded-rect";
+import {
   SPECIMEN_CELL_SIZE,
   SPECIMEN_COLS,
   SPECIMEN_ROWS,
@@ -65,10 +72,13 @@ export function stepSpecimen(state: AutomataState) {
 export function drawSpecimen(
   context: CanvasRenderingContext2D,
   state: AutomataState,
+  visualState: AutomataVisualState,
+  deltaMs: number,
 ) {
   const rootStyle = window.getComputedStyle(document.documentElement);
   const primary = rootStyle.getPropertyValue("--primary").trim();
 
+  updateVisualState(visualState, state, deltaMs);
   context.clearRect(
     0,
     0,
@@ -76,22 +86,42 @@ export function drawSpecimen(
     SPECIMEN_ROWS * SPECIMEN_CELL_SIZE,
   );
 
-  for (let cellIndex = 0; cellIndex < state.grid.length; cellIndex += 1) {
-    if (!state.grid[cellIndex]) {
+  for (let slot = 0; slot < visualState.activeCount; slot += 1) {
+    const cellIndex = visualState.activeCells[slot];
+    const alpha = visualState.alpha[cellIndex];
+
+    if (alpha <= 0.01) {
       continue;
     }
 
-    const x = (cellIndex % SPECIMEN_COLS) * SPECIMEN_CELL_SIZE;
-    const y = Math.floor(cellIndex / SPECIMEN_COLS) * SPECIMEN_CELL_SIZE;
+    const scale =
+      smoothIntensity(visualState.scale[cellIndex]) *
+      (state.grid[cellIndex] === 1
+        ? cellBreath(cellIndex, visualState.ageMs[cellIndex])
+        : 1);
+    const size = Math.max(1, (SPECIMEN_CELL_SIZE - 1.2) * scale);
+    const x =
+      (cellIndex % SPECIMEN_COLS) * SPECIMEN_CELL_SIZE +
+      SPECIMEN_CELL_SIZE / 2 +
+      visualState.offsetX[cellIndex] -
+      size / 2;
+    const y =
+      Math.floor(cellIndex / SPECIMEN_COLS) * SPECIMEN_CELL_SIZE +
+      SPECIMEN_CELL_SIZE / 2 +
+      visualState.offsetY[cellIndex] -
+      size / 2;
 
     context.fillStyle = `hsl(${primary})`;
-    context.globalAlpha = 0.55;
-    context.fillRect(
-      x + 1,
-      y + 1,
-      SPECIMEN_CELL_SIZE - 2,
-      SPECIMEN_CELL_SIZE - 2,
-    );
+    context.globalAlpha = 0.55 * smoothIntensity(alpha);
+    fillRoundedRect(context, x, y, size, size, Math.max(1, size * 0.38));
   }
   context.globalAlpha = 1;
+}
+
+export function createSpecimenVisualState(state: AutomataState) {
+  return createVisualState(state);
+}
+
+function smoothIntensity(value: number) {
+  return value * value * (3 - 2 * value);
 }

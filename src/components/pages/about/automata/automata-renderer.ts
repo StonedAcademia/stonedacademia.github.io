@@ -1,9 +1,17 @@
 import { viewportSize, type AutomataState } from "./automata-model";
+import {
+  cellBreath,
+  updateVisualState,
+  type AutomataVisualState,
+} from "./rendering/automata-visual-state";
+import { fillRoundedRect } from "./rendering/rounded-rect";
 
 export function drawField(
   context: CanvasRenderingContext2D,
   state: AutomataState,
   tick: number,
+  visualState: AutomataVisualState,
+  deltaMs: number,
 ) {
   const { height, width } = viewportSize();
   const rootStyle = window.getComputedStyle(document.documentElement);
@@ -11,26 +19,44 @@ export function drawField(
   const foreground = rootStyle.getPropertyValue("--foreground").trim();
   const pulse = 0.55 + Math.sin(tick / 7) * 0.2;
 
+  updateVisualState(visualState, state, deltaMs);
   context.clearRect(0, 0, width, height);
 
-  for (let cellIndex = 0; cellIndex < state.grid.length; cellIndex += 1) {
-    if (!state.grid[cellIndex]) {
+  for (let slot = 0; slot < visualState.activeCount; slot += 1) {
+    const cellIndex = visualState.activeCells[slot];
+    const alpha = visualState.alpha[cellIndex];
+
+    if (alpha <= 0.01 || state.mask[cellIndex]) {
       continue;
     }
 
-    const x = (cellIndex % state.cols) * state.cellSize;
-    const y = Math.floor(cellIndex / state.cols) * state.cellSize;
+    const scale =
+      smoothIntensity(visualState.scale[cellIndex]) *
+      (state.grid[cellIndex] === 1
+        ? cellBreath(cellIndex, visualState.ageMs[cellIndex])
+        : 1);
+    const size = Math.max(1, (state.cellSize - 1.4) * scale);
+    const x =
+      (cellIndex % state.cols) * state.cellSize +
+      state.cellSize / 2 +
+      visualState.offsetX[cellIndex] -
+      size / 2;
+    const y =
+      Math.floor(cellIndex / state.cols) * state.cellSize +
+      state.cellSize / 2 +
+      visualState.offsetY[cellIndex] -
+      size / 2;
     const nearText = state.edge[cellIndex] === 1;
 
     context.fillStyle = nearText ? `hsl(${primary})` : `hsl(${foreground})`;
-    context.globalAlpha = nearText ? 0.3 + pulse * 0.1 : 0.13;
-    context.fillRect(
-      x + 1,
-      y + 1,
-      Math.max(1, state.cellSize - 2),
-      Math.max(1, state.cellSize - 2),
-    );
+    context.globalAlpha =
+      (nearText ? 0.3 + pulse * 0.1 : 0.13) * smoothIntensity(alpha);
+    fillRoundedRect(context, x, y, size, size, Math.max(1, size * 0.38));
   }
 
   context.globalAlpha = 1;
+}
+
+function smoothIntensity(value: number) {
+  return value * value * (3 - 2 * value);
 }

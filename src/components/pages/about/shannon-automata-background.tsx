@@ -9,10 +9,14 @@ import {
 } from "./automata/automata-evolution";
 import { createAutomataState, viewportSize } from "./automata/automata-model";
 import { drawField } from "./automata/automata-renderer";
+import {
+  captureVisualGeneration,
+  createVisualState,
+} from "./automata/rendering/automata-visual-state";
 import { refreshTextField } from "./automata/automata-text-field";
 import { AutomataTextBridge } from "./automata/text/automata-text-bridge";
 
-const STEP_INTERVAL_MS = 82;
+const STEP_INTERVAL_MS = 110;
 
 export function ShannonAutomataBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -44,6 +48,7 @@ export function ShannonAutomataBackground() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let animationFrame = 0;
     let lastFieldRefresh = 0;
+    let lastRender = performance.now();
     let lastStep = 0;
     let tick = 0;
     const bridge = new AutomataTextBridge();
@@ -51,6 +56,7 @@ export function ShannonAutomataBackground() {
       viewportSize().width,
       viewportSize().height,
     );
+    let visualState = createVisualState(state);
 
     function resizeCanvas() {
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
@@ -66,13 +72,20 @@ export function ShannonAutomataBackground() {
       refreshTextField(state);
       bridge.init(state);
       seedField(state);
-      drawField(canvasContext, state, tick);
+      visualState = createVisualState(state);
+      lastRender = performance.now();
+      lastStep = performance.now();
+      drawField(canvasContext, state, tick, visualState, 1000 / 300);
     }
 
     function animate(now: number) {
+      const deltaMs = Math.min(now - lastRender, 48);
+      lastRender = now;
+
       if (now - lastFieldRefresh > 700) {
         refreshTextField(state);
         bridge.init(state);
+        captureVisualGeneration(visualState, state);
         lastFieldRefresh = now;
       }
 
@@ -81,11 +94,18 @@ export function ShannonAutomataBackground() {
         bridge.update(state, tick);
         emitFromText(state, tick);
         emitFromEdges(state, tick);
+        captureVisualGeneration(visualState, state);
         tick += 1;
         lastStep = now;
       }
 
-      drawField(canvasContext, state, tick);
+      drawField(
+        canvasContext,
+        state,
+        tick,
+        visualState,
+        reducedMotion.matches ? 1000 / 300 : deltaMs,
+      );
       animationFrame = window.requestAnimationFrame(animate);
     }
 
