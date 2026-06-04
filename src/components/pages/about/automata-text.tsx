@@ -60,7 +60,12 @@ export function AutomataText({
     "--pretext-lines": metrics.lineCount,
   } as CSSProperties;
 
-  const chars = [...text].map((char, i) => (
+  const segments =
+    typeof Intl.Segmenter !== "undefined"
+      ? [...new Intl.Segmenter().segment(text)].map(({ segment }) => segment)
+      : [...text];
+
+  const chars = segments.map((char, i) => (
     <span key={i} data-automata-char={String(i)}>
       {char}
     </span>
@@ -132,7 +137,7 @@ function usePretextMetrics(
           font,
           options.whiteSpace,
           options.letterSpacing ?? 0,
-        ].join(" ");
+        ].join("\0");
 
         if (!prepared || preparedKey !== nextPreparedKey) {
           prepared = prepare(text, font, options);
