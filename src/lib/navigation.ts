@@ -36,8 +36,15 @@ export function usePathname(): PathnameState {
     }
 
     setPathname(path);
-    window.scrollTo({ top: 0 });
+    window.scrollTo({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      top: 0,
+    });
   }
 
   return { pathname, navigate };
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }

@@ -1,5 +1,6 @@
 import {
   type CSSProperties,
+  type PointerEvent,
   type RefObject,
   useCallback,
   useEffect,
@@ -17,8 +18,10 @@ import {
   createSpecimenVisualState,
   createSpecimenState,
   drawSpecimen,
+  ruleReadoutForCell,
   seedSpecies,
   stepSpecimen,
+  type SpecimenRuleReadout,
 } from "./specimen-simulation";
 import {
   CYCLE_INTERVAL_MS,
@@ -34,14 +37,23 @@ import {
 /** Horizontal side used for the tooltip relative to the specimen control. */
 type TooltipSide = "left" | "right";
 
+type HoverCell = {
+  x: number;
+  y: number;
+};
+
 /** Controller values consumed by the specimen view component. */
 type SpecimenController = {
   /** Canvas ref used by the animation loop. */
   canvasRef: RefObject<HTMLCanvasElement | null>;
   /** CSS custom properties applied to the focusable specimen control. */
   controlStyle: CSSProperties;
+  /** Clears the live rule readout when the pointer leaves the canvas. */
+  clearRuleHover: () => void;
   /** Closes the explanatory tooltip. */
   hideTooltip: () => void;
+  /** Current hover-derived Conway rule readout for the equation display. */
+  ruleReadout: SpecimenRuleReadout | null;
   /** Opens the tooltip and recalculates its preferred side. */
   showTooltip: () => void;
   /** Currently displayed specimen metadata. */
@@ -52,6 +64,8 @@ type SpecimenController = {
   tooltipOpen: boolean;
   /** Side chosen for the tooltip to avoid viewport overflow. */
   tooltipSide: TooltipSide;
+  /** Updates the live rule readout from the pointer's canvas position. */
+  updateRuleHover: (event: PointerEvent<HTMLCanvasElement>) => void;
 };
 
 /**
@@ -67,6 +81,8 @@ export function useSpecimenController(): SpecimenController {
   const visualStateRef = useRef<AutomataVisualState>(
     createSpecimenVisualState(stateRef.current),
   );
+  const generationRef = useRef(0);
+  const hoverCellRef = useRef<HoverCell | null>(null);
   const speciesIndexRef = useRef(0);
   const tooltipOpenRef = useRef(false);
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -74,10 +90,30 @@ export function useSpecimenController(): SpecimenController {
   );
   const tooltipId = useId();
   const [canvasOpacity, setCanvasOpacity] = useState(1);
+  const [ruleReadout, setRuleReadout] =
+    useState<SpecimenRuleReadout | null>(null);
   const [speciesIndex, setSpeciesIndex] = useState(0);
   const [tooltipSide, setTooltipSide] = useState<TooltipSide>("right");
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const species = SPECIES[speciesIndex];
+
+  const publishRuleReadout = useCallback(() => {
+    const hoverCell = hoverCellRef.current;
+
+    if (!hoverCell) {
+      return;
+    }
+
+    const next = ruleReadoutForCell(
+      stateRef.current,
+      hoverCell.x,
+      hoverCell.y,
+      generationRef.current,
+    );
+    setRuleReadout((current) =>
+      ruleReadoutsEqual(current, next) ? current : next,
+    );
+  }, []);
 
   /** Advances to the next species while keeping the ref and React state aligned. */
   const advanceSpecies = useCallback(() => {
@@ -126,8 +162,10 @@ export function useSpecimenController(): SpecimenController {
     );
     canvasContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     stateRef.current = createSpecimenState();
+    generationRef.current = 0;
     seedSpecies(stateRef.current, species);
     visualStateRef.current = createSpecimenVisualState(stateRef.current);
+    publishRuleReadout();
 
     /** Draws every frame and advances Conway generations when motion is allowed. */
     function animate(now: number) {
@@ -136,7 +174,9 @@ export function useSpecimenController(): SpecimenController {
 
       if (!reducedMotion.matches && now - lastStep > STEP_INTERVAL_MS) {
         stepSpecimen(stateRef.current);
+        generationRef.current += 1;
         captureVisualGeneration(visualStateRef.current, stateRef.current);
+        publishRuleReadout();
         lastStep = now;
       }
 
@@ -154,7 +194,7 @@ export function useSpecimenController(): SpecimenController {
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [species]);
+  }, [publishRuleReadout, species]);
 
   /** Cycles specimens automatically, pausing while the tooltip is being read. */
   useEffect(() => {
@@ -193,17 +233,52 @@ export function useSpecimenController(): SpecimenController {
     setTooltipOpen(true);
   }, []);
 
+  const updateRuleHover = useCallback(
+    (event: PointerEvent<HTMLCanvasElement>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+
+      if (rect.width <= 0 || rect.height <= 0) {
+        return;
+      }
+
+      hoverCellRef.current = {
+        x: clampCell(
+          Math.floor(
+            ((event.clientX - rect.left) / rect.width) * SPECIMEN_COLS,
+          ),
+          SPECIMEN_COLS,
+        ),
+        y: clampCell(
+          Math.floor(
+            ((event.clientY - rect.top) / rect.height) * SPECIMEN_ROWS,
+          ),
+          SPECIMEN_ROWS,
+        ),
+      };
+      publishRuleReadout();
+    },
+    [publishRuleReadout],
+  );
+
+  const clearRuleHover = useCallback(() => {
+    hoverCellRef.current = null;
+    setRuleReadout(null);
+  }, []);
+
   return {
     canvasRef,
+    clearRuleHover,
     controlStyle: {
       "--specimen-opacity": canvasOpacity,
     } as CSSProperties,
     hideTooltip: () => setTooltipOpen(false),
+    ruleReadout,
     showTooltip,
     species,
     tooltipId,
     tooltipOpen,
     tooltipSide,
+    updateRuleHover,
   };
 }
 
@@ -218,4 +293,27 @@ function tooltipSideFor(canvas: HTMLCanvasElement | null): TooltipSide {
   }
 
   return window.innerWidth - rect.right >= rect.left ? "right" : "left";
+}
+
+function clampCell(value: number, length: number) {
+  return Math.min(length - 1, Math.max(0, value));
+}
+
+function ruleReadoutsEqual(
+  current: SpecimenRuleReadout | null,
+  next: SpecimenRuleReadout,
+) {
+  return (
+    current !== null &&
+    current.cellLabel === next.cellLabel &&
+    current.currentValue === next.currentValue &&
+    current.generation === next.generation &&
+    current.neighborCount === next.neighborCount &&
+    current.nextValue === next.nextValue &&
+    current.outcomeLabel === next.outcomeLabel &&
+    current.ruleToken === next.ruleToken &&
+    current.stateLabel === next.stateLabel &&
+    current.x === next.x &&
+    current.y === next.y
+  );
 }

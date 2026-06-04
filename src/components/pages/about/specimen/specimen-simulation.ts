@@ -17,6 +17,19 @@ import {
   type Species,
 } from "./specimen-species";
 
+export type SpecimenRuleReadout = {
+  cellLabel: string;
+  currentValue: number;
+  generation: number;
+  neighborCount: number;
+  nextValue: number;
+  outcomeLabel: string;
+  ruleToken: string;
+  stateLabel: string;
+  x: number;
+  y: number;
+};
+
 /** Creates the fixed-size automata state used by the specimen canvas. */
 export function createSpecimenState(): AutomataState {
   const length = SPECIMEN_COLS * SPECIMEN_ROWS;
@@ -70,6 +83,33 @@ export function stepSpecimen(state: AutomataState) {
 
   state.grid = buffer;
   state.buffer = grid;
+}
+
+/** Returns the active B/S branch for a specimen cell in the current generation. */
+export function ruleReadoutForCell(
+  state: AutomataState,
+  x: number,
+  y: number,
+  generation: number,
+): SpecimenRuleReadout {
+  const alive = state.grid[indexOf(state, x, y)] === 1;
+  const neighborCount = liveNeighborCount(state, x, y);
+  const nextAlive =
+    neighborCount === 3 ||
+    (alive && (neighborCount === 2 || neighborCount === 3));
+
+  return {
+    cellLabel: `(${x}, ${y})`,
+    currentValue: alive ? 1 : 0,
+    generation,
+    neighborCount,
+    nextValue: nextAlive ? 1 : 0,
+    outcomeLabel: outcomeLabel(alive, nextAlive),
+    ruleToken: `${alive ? "S" : "B"}${neighborCount}`,
+    stateLabel: alive ? "live" : "empty",
+    x,
+    y,
+  };
 }
 
 /**
@@ -132,4 +172,27 @@ export function createSpecimenVisualState(state: AutomataState) {
 /** Cubic smoothstep used to soften specimen alpha and scale transitions. */
 function smoothIntensity(value: number) {
   return value * value * (3 - 2 * value);
+}
+
+function liveNeighborCount(state: AutomataState, x: number, y: number) {
+  const { grid } = state;
+
+  return (
+    grid[indexOf(state, x - 1, y - 1)] +
+    grid[indexOf(state, x, y - 1)] +
+    grid[indexOf(state, x + 1, y - 1)] +
+    grid[indexOf(state, x - 1, y)] +
+    grid[indexOf(state, x + 1, y)] +
+    grid[indexOf(state, x - 1, y + 1)] +
+    grid[indexOf(state, x, y + 1)] +
+    grid[indexOf(state, x + 1, y + 1)]
+  );
+}
+
+function outcomeLabel(alive: boolean, nextAlive: boolean) {
+  if (alive) {
+    return nextAlive ? "survives" : "dies";
+  }
+
+  return nextAlive ? "birth" : "empty";
 }

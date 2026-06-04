@@ -45,6 +45,8 @@ export function AutomataSpecimen() {
           <div className="automata-specimen-body">
             <canvas
               aria-hidden="true"
+              onPointerLeave={specimen.clearRuleHover}
+              onPointerMove={specimen.updateRuleHover}
               ref={specimen.canvasRef}
               style={{
                 display: "block",
@@ -83,7 +85,7 @@ export function AutomataSpecimen() {
           </div>
         ) : null}
       </div>
-      <AutomataRuleEquation />
+      <AutomataRuleEquation readout={specimen.ruleReadout} />
     </div>
   );
 }
