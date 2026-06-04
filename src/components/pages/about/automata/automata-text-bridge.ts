@@ -141,7 +141,48 @@ export class AutomataTextBridge {
     }
   }
 
-  update(_state: AutomataState, _tick: number): void {
-    // implemented in later tasks
+  update(state: AutomataState, tick: number): void {
+    if (tick % 4 === 0) {
+      this.updateFeedback(state);
+    }
+    this.updateCollisions(state, tick);
+  }
+
+  private updateFeedback(state: AutomataState): void {
+    for (const char of this.chars) {
+      const { cellWindowX1, cellWindowY1, cellWindowX2, cellWindowY2, element } = char;
+
+      let liveCount = 0;
+      let total = 0;
+
+      for (let y = cellWindowY1; y <= cellWindowY2; y++) {
+        for (let x = cellWindowX1; x <= cellWindowX2; x++) {
+          if (x < 0 || x >= state.cols || y < 0 || y >= state.rows) {
+            continue;
+          }
+
+          const cellIndex = y * state.cols + x;
+          liveCount += state.grid[cellIndex];
+          total++;
+        }
+      }
+
+      const density = total > 0 ? liveCount / total : 0;
+
+      // Binary Shannon entropy — 0 when all dead or all alive, 1 at 50/50
+      const p = density;
+      let entropy = 0;
+
+      if (p > 0 && p < 1) {
+        entropy = -(p * Math.log2(p) + (1 - p) * Math.log2(1 - p));
+      }
+
+      element.style.setProperty("--char-density", density.toFixed(3));
+      element.style.setProperty("--char-hue-shift", `${(entropy * 30).toFixed(1)}deg`);
+    }
+  }
+
+  private updateCollisions(_state: AutomataState, _tick: number): void {
+    // implemented in Task 6
   }
 }
