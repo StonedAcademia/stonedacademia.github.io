@@ -7,6 +7,7 @@ import "./index.css";
 import "./lib/styles/motion-core.css";
 import "./lib/styles/motion-controls.css";
 import "./lib/styles/page-surfaces.css";
+import "./lib/styles/pages/automata-specimen.css";
 import "./lib/styles/markdown.css";
 
 createRoot(document.getElementById("root")!).render(
