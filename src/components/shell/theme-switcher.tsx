@@ -15,11 +15,11 @@ export function ThemeSwitcher({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="motion-theme fixed right-4 top-4 z-10">
+    <div className="motion-theme theme-switcher">
       <Button
         aria-expanded={open}
         aria-label="Select theme"
-        className="bg-background/85 backdrop-blur"
+        className="bg-background/95 shadow-sm backdrop-blur"
         onClick={() => setOpen((value) => !value)}
         size="icon"
         type="button"

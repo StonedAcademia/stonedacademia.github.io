@@ -92,6 +92,13 @@
   animation: motion-popover-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.theme-switcher {
+  position: fixed;
+  right: clamp(1.25rem, calc((100vw - 48rem) / 2 - 3.25rem), 18rem);
+  top: clamp(1.5rem, 3vw, 2.5rem);
+  z-index: 10;
+}
+
 .motion-block,
 .motion-list-item,
 .motion-meta {
