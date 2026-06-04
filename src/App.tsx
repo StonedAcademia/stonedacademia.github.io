@@ -1,8 +1,8 @@
 import { useMemo, type ReactNode } from "react";
 
-import { AboutPage } from "@/components/pages/about-page";
-import { BlogIndexPage } from "@/components/pages/blog-index-page";
-import { BlogPage } from "@/components/pages/blog-page";
+import { AboutPage } from "@/components/pages/about/about-page";
+import { BlogIndexPage } from "@/components/pages/blog/index/blog-index-page";
+import { BlogPage } from "@/components/pages/blog/blog-page";
 import { ContactPage } from "@/components/pages/contact-page";
 import { NotFoundPage } from "@/components/pages/not-found-page";
 import { SiteHeader } from "@/components/shell/site-header";
@@ -24,7 +24,7 @@ export default function App() {
   let page: ReactNode;
 
   if (pathname === "/") {
-    page = <AboutPage navigate={navigate} sortedPosts={posts} />;
+    page = <AboutPage />;
   } else if (pathname === "/contact" || pathname === "/contact/") {
     page = <ContactPage />;
   } else if (blogRoute.isIndex) {
