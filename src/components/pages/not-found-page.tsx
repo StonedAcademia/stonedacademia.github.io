@@ -9,7 +9,7 @@ export function NotFoundPage({
   path: string;
 }) {
   return (
-    <section className="space-y-5">
+    <section className="motion-page space-y-5">
       <p className="text-xs uppercase tracking-normal text-muted-foreground">
         404
       </p>

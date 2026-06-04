@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { FileText, Search, X } from "lucide-react";
 
 import { TextLink } from "@/components/shell/text-link";
 import { Button } from "@/components/ui/button";
 import type { BlogPost } from "@/lib/blog";
 import type { Navigate } from "@/lib/navigation";
+import { PretextText } from "@/lib/pretext/pretext-text";
 import { cn } from "@/lib/utils";
 
 export function BlogIndexPage({
@@ -55,22 +56,28 @@ export function BlogIndexPage({
   }
 
   return (
-    <section>
-      <div className="mb-10 space-y-3 border-l border-border pl-4">
+    <section className="motion-page">
+      <div
+        className="motion-rail motion-block mb-10 space-y-3 border-l border-border pl-4"
+        style={motionStyle(0)}
+      >
         <p className="text-xs uppercase tracking-normal text-muted-foreground">
           blog
         </p>
         <h1 className="text-2xl font-semibold leading-tight">posts</h1>
       </div>
 
-      <div className="mb-8 space-y-4 border-l border-border pl-4">
+      <div
+        className="motion-rail motion-block mb-8 space-y-4 border-l border-border pl-4"
+        style={motionStyle(1)}
+      >
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9.5rem_9.5rem_auto]">
           <label className="relative block">
             <span className="sr-only">Search posts</span>
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="motion-icon pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
               aria-label="Search posts by name, tag, or date"
-              className="h-9 w-full rounded-sm border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              className="motion-control h-9 w-full rounded-sm border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="search name / tag / date"
               type="search"
@@ -81,7 +88,7 @@ export function BlogIndexPage({
             <span className="sr-only">From date</span>
             <input
               aria-label="From date"
-              className="h-9 w-full rounded-sm border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
+              className="motion-control h-9 w-full rounded-sm border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
               onChange={(event) => setStartDate(event.target.value)}
               type="date"
               value={startDate}
@@ -91,7 +98,7 @@ export function BlogIndexPage({
             <span className="sr-only">To date</span>
             <input
               aria-label="To date"
-              className="h-9 w-full rounded-sm border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
+              className="motion-control h-9 w-full rounded-sm border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
               onChange={(event) => setEndDate(event.target.value)}
               type="date"
               value={endDate}
@@ -99,7 +106,7 @@ export function BlogIndexPage({
           </label>
           <Button
             aria-label="Clear filters"
-            className="shrink-0"
+            className="motion-control shrink-0"
             disabled={!hasFilters}
             onClick={clearFilters}
             size="icon"
@@ -107,7 +114,7 @@ export function BlogIndexPage({
             type="button"
             variant="outline"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="motion-icon h-3.5 w-3.5" />
           </Button>
         </div>
 
@@ -115,23 +122,25 @@ export function BlogIndexPage({
           <div className="flex flex-wrap gap-2">
             <Button
               aria-pressed={!selectedTag}
-              className="h-7 px-2 text-xs"
+              className="motion-chip h-7 px-2 text-xs"
               onClick={() => setSelectedTag("")}
+              style={motionStyle(0)}
               type="button"
               variant={!selectedTag ? "default" : "outline"}
             >
               all
             </Button>
-            {allTags.map((tag) => (
+            {allTags.map((tag, tagIndex) => (
               <Button
                 aria-pressed={selectedTag === tag}
-                className="h-7 max-w-full px-2 text-xs"
+                className="motion-chip h-7 max-w-full px-2 text-xs"
                 key={tag}
                 onClick={() =>
                   setSelectedTag((currentTag) =>
                     currentTag === tag ? "" : tag,
                   )
                 }
+                style={motionStyle(tagIndex + 1)}
                 type="button"
                 variant={selectedTag === tag ? "default" : "outline"}
               >
@@ -141,19 +150,25 @@ export function BlogIndexPage({
           </div>
         ) : null}
 
-        <p className="text-xs text-muted-foreground">
-          {filteredPosts.length} of {sortedPosts.length} posts
-        </p>
+        <PretextText
+          animation="meta"
+          className="text-xs text-muted-foreground"
+          text={`${filteredPosts.length} of ${sortedPosts.length} posts`}
+        />
       </div>
 
       <div className="space-y-5">
         {filteredPosts.length ? (
-          filteredPosts.map((post) => (
-            <article className="border-l border-border pl-4" key={post.slug}>
+          filteredPosts.map((post, postIndex) => (
+            <article
+              className="motion-rail motion-list-item border-l border-border pl-4"
+              key={post.slug}
+              style={motionStyle(postIndex)}
+            >
               <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <TextLink href={post.path} navigate={navigate}>
                   <span className="inline-flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" />
+                    <FileText className="motion-icon h-3.5 w-3.5" />
                     {post.title}
                   </span>
                 </TextLink>
@@ -164,21 +179,26 @@ export function BlogIndexPage({
                 ) : null}
               </div>
               {post.description ? (
-                <p className="text-sm leading-6 text-muted-foreground">
+                <PretextText
+                  className="text-sm leading-6 text-muted-foreground"
+                  index={postIndex}
+                  text={post.description}
+                >
                   {post.description}
-                </p>
+                </PretextText>
               ) : null}
               {post.tags.length ? (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {post.tags.map((tag, tagIndex) => (
                     <button
                       className={cn(
-                        "max-w-full truncate rounded-sm border border-border px-2 py-1 text-xs text-primary transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                        "motion-chip max-w-full truncate rounded-sm border border-border px-2 py-1 text-xs text-primary transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                         selectedTag === tag &&
                           "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
                       )}
                       key={tag}
                       onClick={() => setSelectedTag(tag)}
+                      style={motionStyle(tagIndex)}
                       type="button"
                     >
                       #{tag}
@@ -189,7 +209,7 @@ export function BlogIndexPage({
             </article>
           ))
         ) : (
-          <p className="border-l border-border pl-4 text-sm leading-6 text-muted-foreground">
+          <p className="motion-rail motion-block border-l border-border pl-4 text-sm leading-6 text-muted-foreground">
             No posts match those filters.
           </p>
         )}
@@ -220,4 +240,8 @@ function dateIsInRange(postDate: string, startDate: string, endDate: string) {
   }
 
   return true;
+}
+
+function motionStyle(index: number) {
+  return { "--item-index": index } as CSSProperties;
 }

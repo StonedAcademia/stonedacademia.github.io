@@ -13,7 +13,7 @@ export function TextLink({
 }) {
   return (
     <a
-      className="text-primary underline decoration-dotted underline-offset-4 hover:decoration-solid"
+      className="motion-link text-primary underline decoration-dotted underline-offset-4 hover:decoration-solid"
       href={href}
       onClick={(event) => {
         event.preventDefault();

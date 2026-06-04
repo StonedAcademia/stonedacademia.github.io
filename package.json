@@ -10,6 +10,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@chenglou/pretext": "^0.0.7",
     "@radix-ui/react-slot": "^1.1.1",
     "@viz-js/viz": "^3.28.0",
     "class-variance-authority": "^0.7.1",

@@ -1,3 +1,4 @@
+import { isValidElement, type CSSProperties, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -7,6 +8,7 @@ import { TextLink } from "@/components/shell/text-link";
 import type { BlogPost } from "@/lib/blog";
 import { MarkdownPre } from "@/lib/markdown/markdown-pre";
 import type { Navigate } from "@/lib/navigation";
+import { PretextText } from "@/lib/pretext/pretext-text";
 
 export function BlogPage({
   navigate,
@@ -16,26 +18,39 @@ export function BlogPage({
   post: BlogPost;
 }) {
   return (
-    <article>
-      <div className="mb-10 space-y-3 border-l border-border pl-4">
-        <p className="text-xs text-muted-foreground">{post.path}</p>
-        <h1 className="text-2xl font-semibold leading-tight">{post.title}</h1>
+    <article className="motion-page">
+      <div className="motion-rail motion-block mb-10 space-y-3 border-l border-border pl-4">
+        <PretextText
+          animation="meta"
+          className="text-xs text-muted-foreground"
+          text={post.path}
+        />
+        <PretextText
+          animation="heading"
+          as="h1"
+          className="text-2xl font-semibold leading-tight"
+          text={post.title}
+        />
         {post.description ? (
-          <p className="text-sm leading-6 text-muted-foreground">
+          <PretextText
+            className="text-sm leading-6 text-muted-foreground"
+            text={post.description}
+          >
             {post.description}
-          </p>
+          </PretextText>
         ) : null}
         {post.date ? (
-          <time className="block text-xs text-muted-foreground">
+          <time className="motion-meta block text-xs text-muted-foreground">
             {post.date}
           </time>
         ) : null}
         {post.tags.length ? (
           <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
+            {post.tags.map((tag, tagIndex) => (
               <span
-                className="max-w-full truncate rounded-sm border border-border px-2 py-1 text-xs text-primary"
+                className="motion-chip max-w-full truncate rounded-sm border border-border px-2 py-1 text-xs text-primary"
                 key={tag}
+                style={{ "--item-index": tagIndex } as CSSProperties}
               >
                 #{tag}
               </span>
@@ -45,7 +60,7 @@ export function BlogPage({
       </div>
 
       <ReactMarkdown
-        className="markdown"
+        className="markdown motion-markdown"
         components={{
           a({ children, href }) {
             if (href?.startsWith("/")) {
@@ -62,6 +77,47 @@ export function BlogPage({
               </a>
             );
           },
+          h1({ children }) {
+            const text = textFromChildren(children);
+
+            return (
+              <PretextText as="h1" animation="heading" text={text}>
+                {children}
+              </PretextText>
+            );
+          },
+          h2({ children }) {
+            const text = textFromChildren(children);
+
+            return (
+              <PretextText as="h2" animation="heading" text={text}>
+                {children}
+              </PretextText>
+            );
+          },
+          h3({ children }) {
+            const text = textFromChildren(children);
+
+            return (
+              <PretextText as="h3" animation="heading" text={text}>
+                {children}
+              </PretextText>
+            );
+          },
+          li({ children }) {
+            const text = textFromChildren(children);
+
+            return (
+              <PretextText as="li" text={text}>
+                {children}
+              </PretextText>
+            );
+          },
+          p({ children }) {
+            const text = textFromChildren(children);
+
+            return <PretextText text={text}>{children}</PretextText>;
+          },
           pre: MarkdownPre,
         }}
         rehypePlugins={[rehypeKatex]}
@@ -70,9 +126,40 @@ export function BlogPage({
         {post.body}
       </ReactMarkdown>
 
-      <footer className="mt-10 border-l border-border pl-4 text-xs text-muted-foreground">
+      <PretextText
+        animation="meta"
+        as="footer"
+        className="motion-rail motion-block mt-10 border-l border-border pl-4 text-xs text-muted-foreground"
+        text={post.readingTime}
+      >
         {post.readingTime}
-      </footer>
+      </PretextText>
     </article>
   );
+}
+
+function textFromChildren(children: ReactNode): string {
+  if (
+    children === null ||
+    children === undefined ||
+    typeof children === "boolean"
+  ) {
+    return "";
+  }
+
+  if (typeof children === "string" || typeof children === "number") {
+    return String(children);
+  }
+
+  if (Array.isArray(children)) {
+    return children.map((child) => textFromChildren(child)).join("");
+  }
+
+  if (isValidElement(children)) {
+    return textFromChildren(
+      (children.props as { children?: ReactNode }).children,
+    );
+  }
+
+  return "";
 }
