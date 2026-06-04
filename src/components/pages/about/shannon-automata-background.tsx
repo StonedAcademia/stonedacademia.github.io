@@ -7,7 +7,7 @@ import {
   seedField,
   stepField,
 } from "./automata/automata-evolution";
-import { createAutomataState, viewportSize } from "./automata/automata-model";
+import { createAutomataState, indexOf, viewportSize } from "./automata/automata-model";
 import { drawField } from "./automata/automata-renderer";
 import { refreshTextField } from "./automata/automata-text-field";
 
@@ -84,14 +84,28 @@ export function ShannonAutomataBackground() {
       animationFrame = window.requestAnimationFrame(animate);
     }
 
+    function handleInject(event: Event) {
+      const { cells } = (event as CustomEvent<{ cells: Array<{ x: number; y: number }> }>).detail;
+
+      for (const cell of cells) {
+        const cellIndex = indexOf(state, cell.x, cell.y);
+
+        if (!state.mask[cellIndex]) {
+          state.grid[cellIndex] = 1;
+        }
+      }
+    }
+
     resizeCanvas();
     animationFrame = window.requestAnimationFrame(animate);
     window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("automata:inject", handleInject);
     reducedMotion.addEventListener("change", resizeCanvas);
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("automata:inject", handleInject);
       reducedMotion.removeEventListener("change", resizeCanvas);
     };
   }, [portalTarget]);
