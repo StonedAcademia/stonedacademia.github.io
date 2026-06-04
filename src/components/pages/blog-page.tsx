@@ -1,8 +1,11 @@
 import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 
 import { TextLink } from "@/components/shell/text-link";
 import type { BlogPost } from "@/lib/blog";
+import { MarkdownPre } from "@/lib/markdown/markdown-pre";
 import type { Navigate } from "@/lib/navigation";
 
 export function BlogPage({
@@ -47,8 +50,10 @@ export function BlogPage({
               </a>
             );
           },
+          pre: MarkdownPre,
         }}
-        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[remarkGfm, remarkMath]}
       >
         {post.body}
       </ReactMarkdown>

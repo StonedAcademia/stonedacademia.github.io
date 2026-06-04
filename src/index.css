@@ -140,6 +140,18 @@
     @apply bg-transparent p-0;
   }
 
+  .graphviz {
+    @apply overflow-x-auto border border-border bg-muted p-4;
+  }
+
+  .graphviz svg {
+    @apply mx-auto h-auto max-w-full;
+  }
+
+  .graphviz-source {
+    @apply overflow-x-auto border border-border bg-muted p-4 text-sm leading-6 text-muted-foreground;
+  }
+
   .markdown hr {
     @apply border-border;
   }

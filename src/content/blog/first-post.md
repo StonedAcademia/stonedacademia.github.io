@@ -20,3 +20,22 @@ Code works too:
 ```ts
 const site = "stoned_academia";
 ```
+
+Inline math renders with $e^{i\pi} + 1 = 0$.
+
+Block math renders too:
+
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+Graphviz diagrams render from fenced DOT blocks:
+
+```dot
+digraph notes {
+  rankdir=LR;
+  markdown -> latex;
+  markdown -> graphviz;
+  graphviz -> svg;
+}
+```

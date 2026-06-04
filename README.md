@@ -23,6 +23,9 @@ Body text here.
 The filename becomes the route. For example, `src/content/blog/notes.md` becomes
 `/blog/notes.md`.
 
+Markdown posts also support LaTeX math with `$inline$` and `$$block$$` syntax,
+plus Graphviz diagrams in fenced `dot`, `graphviz`, or `gv` code blocks.
+
 ## commands
 
 ```bash
