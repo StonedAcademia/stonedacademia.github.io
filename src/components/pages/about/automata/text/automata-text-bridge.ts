@@ -29,6 +29,7 @@ export class AutomataTextBridge {
 
     for (const span of document.querySelectorAll<HTMLSpanElement>("[data-automata-char]")) {
       const rect = span.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) continue;
       this.entries.push({
         kind: "char",
         element: span,
