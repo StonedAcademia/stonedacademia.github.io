@@ -36,6 +36,7 @@ export function AutomataRuleEquation({
     <aside
       aria-label="Conway Game of Life transition equation"
       className="automata-rule-equation automata-text-field"
+      data-automata-blocker="transition"
     >
       <div className="automata-rule-equation-meta" aria-hidden="true">
         <span>Conway's G.o.L. Transition</span>

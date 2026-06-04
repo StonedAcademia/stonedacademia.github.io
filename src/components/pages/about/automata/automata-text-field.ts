@@ -6,7 +6,8 @@ import {
 } from "./automata-model";
 
 /** Selector for foreground controls that should repel the background field. */
-const BLOCKER_SELECTOR = "[data-automata-blocker='spawner']";
+const BLOCKER_SELECTOR = "[data-automata-blocker]";
+const TRANSITION_BLOCKER_PADDING_CELLS = 2;
 
 /**
  * Rebuilds text-edge and blocker masks from the current DOM layout.
@@ -26,7 +27,11 @@ export function refreshTextField(state: AutomataState) {
     const rect = element.getBoundingClientRect();
 
     if (rect.width > 0 && rect.height > 0) {
-      markBlockerRadius(state, rect);
+      if (element.dataset.automataBlocker === "transition") {
+        markBlockerRect(state, rect);
+      } else {
+        markBlockerRadius(state, rect);
+      }
     }
   }
 
@@ -60,6 +65,27 @@ function markBlockerRadius(state: AutomataState, rect: DOMRect) {
       if (distance <= radius) {
         state.mask[indexOf(state, x, y)] = 1;
       }
+    }
+  }
+}
+
+/** Marks a padded rectangular mask for wide foreground equation surfaces. */
+function markBlockerRect(state: AutomataState, rect: DOMRect) {
+  const padding = TRANSITION_BLOCKER_PADDING_CELLS * state.cellSize;
+  const left = Math.max(0, Math.floor((rect.left - padding) / state.cellSize));
+  const right = Math.min(
+    state.cols - 1,
+    Math.ceil((rect.right + padding) / state.cellSize),
+  );
+  const top = Math.max(0, Math.floor((rect.top - padding) / state.cellSize));
+  const bottom = Math.min(
+    state.rows - 1,
+    Math.ceil((rect.bottom + padding) / state.cellSize),
+  );
+
+  for (let y = top; y <= bottom; y += 1) {
+    for (let x = left; x <= right; x += 1) {
+      state.mask[indexOf(state, x, y)] = 1;
     }
   }
 }
