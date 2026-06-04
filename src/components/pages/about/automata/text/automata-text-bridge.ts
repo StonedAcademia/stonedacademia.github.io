@@ -1,19 +1,28 @@
 import { type AutomataState } from "../automata-model";
+import {
+  glyphInteractionCells,
+  markGlyphEdges,
+  rectInteractionCells,
+} from "./glyph-cells";
 
 type EntryKind = "char" | "katex" | "graphviz";
 
 type BridgeEntry = {
+  collision: CollisionState;
   kind: EntryKind;
   element: Element;
   interactionCells: number[];
-  lastPulsedTick: number;
   rect: DOMRect;
   text: string;
 };
 
-const INTERACTION_RADIUS_CELLS = 2;
+type CollisionState = {
+  lastPulsedTick: number;
+  wasColliding: boolean;
+};
 
 export class AutomataTextBridge {
+  private collisionStates = new WeakMap<Element, CollisionState>();
   private entries: BridgeEntry[] = [];
   private pendingTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
@@ -30,13 +39,16 @@ export class AutomataTextBridge {
     for (const span of document.querySelectorAll<HTMLSpanElement>("[data-automata-char]")) {
       const rect = span.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) continue;
+      const text = span.textContent ?? "";
+      const interactionCells = glyphInteractionCells(state, span, rect, text);
+      markGlyphEdges(state, interactionCells);
       this.entries.push({
+        collision: this.collisionStateFor(span),
         kind: "char",
         element: span,
-        interactionCells: cellsNearRect(state, rect),
-        lastPulsedTick: -999,
+        interactionCells,
         rect,
-        text: span.textContent ?? "",
+        text,
       });
     }
 
@@ -44,13 +56,16 @@ export class AutomataTextBridge {
       for (const span of collectKaTeXLeafSpans(container)) {
         const rect = span.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) continue;
+        const text = span.textContent ?? "";
+        const interactionCells = glyphInteractionCells(state, span, rect, text);
+        markGlyphEdges(state, interactionCells);
         this.entries.push({
+          collision: this.collisionStateFor(span),
           kind: "katex",
           element: span,
-          interactionCells: cellsNearRect(state, rect),
-          lastPulsedTick: -999,
+          interactionCells,
           rect,
-          text: span.textContent ?? "",
+          text,
         });
       }
     }
@@ -60,72 +75,13 @@ export class AutomataTextBridge {
         const rect = group.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) continue;
         this.entries.push({
+          collision: this.collisionStateFor(group),
           kind: "graphviz",
           element: group,
-          interactionCells: cellsNearRect(state, rect),
-          lastPulsedTick: -999,
+          interactionCells: rectInteractionCells(state, rect),
           rect,
           text: group.querySelector("title")?.textContent ?? "",
         });
-      }
-    }
-
-    this.stampGlyphBitmaps(state);
-  }
-
-  private stampGlyphBitmaps(state: AutomataState): void {
-    for (const entry of this.entries) {
-      if (entry.kind === "graphviz" || !entry.text.trim()) {
-        continue;
-      }
-
-      const { rect, text, element } = entry;
-      const w = Math.max(1, Math.round(rect.width));
-      const h = Math.max(1, Math.round(rect.height));
-
-      const canvas = new OffscreenCanvas(w, h);
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) continue;
-
-      const styles = window.getComputedStyle(element as HTMLElement);
-      const font =
-        styles.font ||
-        [
-          styles.fontStyle,
-          styles.fontVariant,
-          styles.fontWeight,
-          styles.fontSize,
-          styles.fontFamily,
-        ].join(" ");
-
-      ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = "white";
-      ctx.font = font;
-      ctx.textBaseline = "top";
-      ctx.fillText(text, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, w, h);
-      const pixels = imageData.data;
-
-      for (let py = 0; py < h; py++) {
-        for (let px = 0; px < w; px++) {
-          const brightness = pixels[(py * w + px) * 4];
-          if (brightness < 128) continue;
-
-          const screenX = rect.left + px;
-          const screenY = rect.top + py;
-          const cellX = Math.floor(screenX / state.cellSize);
-          const cellY = Math.floor(screenY / state.cellSize);
-
-          if (cellX < 0 || cellX >= state.cols || cellY < 0 || cellY >= state.rows) continue;
-
-          const cellIndex = cellY * state.cols + cellX;
-          if (!state.mask[cellIndex]) {
-            state.grid[cellIndex] = 1;
-          }
-        }
       }
     }
   }
@@ -174,11 +130,21 @@ export class AutomataTextBridge {
         (cellIndex) => state.grid[cellIndex] === 1,
       );
 
-      if (!hasNearbyCell || tick - entry.lastPulsedTick < 60) {
+      if (!hasNearbyCell) {
+        entry.collision.wasColliding = false;
         continue;
       }
 
-      entry.lastPulsedTick = tick;
+      if (
+        entry.collision.wasColliding ||
+        tick - entry.collision.lastPulsedTick < 60
+      ) {
+        entry.collision.wasColliding = true;
+        continue;
+      }
+
+      entry.collision.lastPulsedTick = tick;
+      entry.collision.wasColliding = true;
       entry.element.classList.remove("automata-collision");
       void entry.element.getBoundingClientRect(); // force reflow to restart the animation
       entry.element.classList.add("automata-collision");
@@ -190,6 +156,18 @@ export class AutomataTextBridge {
       this.pendingTimeouts.add(timeoutId);
     }
   }
+
+  private collisionStateFor(element: Element): CollisionState {
+    const state = this.collisionStates.get(element);
+
+    if (state) {
+      return state;
+    }
+
+    const nextState = { lastPulsedTick: -999, wasColliding: false };
+    this.collisionStates.set(element, nextState);
+    return nextState;
+  }
 }
 
 function collectKaTeXLeafSpans(root: Element): HTMLSpanElement[] {
@@ -200,41 +178,4 @@ function collectKaTeXLeafSpans(root: Element): HTMLSpanElement[] {
     }
   }
   return leaves;
-}
-
-function cellsNearRect(state: AutomataState, rect: DOMRect): number[] {
-  const radius = INTERACTION_RADIUS_CELLS * state.cellSize;
-  const left = Math.max(0, Math.floor((rect.left - radius) / state.cellSize));
-  const right = Math.min(
-    state.cols - 1,
-    Math.ceil((rect.right + radius) / state.cellSize),
-  );
-  const top = Math.max(0, Math.floor((rect.top - radius) / state.cellSize));
-  const bottom = Math.min(
-    state.rows - 1,
-    Math.ceil((rect.bottom + radius) / state.cellSize),
-  );
-  const cells: number[] = [];
-
-  for (let y = top; y <= bottom; y += 1) {
-    for (let x = left; x <= right; x += 1) {
-      const cellIndex = y * state.cols + x;
-      if (state.mask[cellIndex]) continue;
-
-      const cellCenterX = x * state.cellSize + state.cellSize / 2;
-      const cellCenterY = y * state.cellSize + state.cellSize / 2;
-
-      if (distanceToRect(cellCenterX, cellCenterY, rect) <= radius) {
-        cells.push(cellIndex);
-      }
-    }
-  }
-
-  return cells;
-}
-
-function distanceToRect(x: number, y: number, rect: DOMRect): number {
-  const dx = Math.max(rect.left - x, 0, x - rect.right);
-  const dy = Math.max(rect.top - y, 0, y - rect.bottom);
-  return Math.hypot(dx, dy);
 }
