@@ -300,25 +300,30 @@ export function AutomataSpecimen() {
     displayMode: false,
   });
 
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   const wrapperOpacity = dissolved ? 0 : 1;
-  const wrapperTransition = dissolved
-    ? `opacity ${DISSOLVE_DURATION_MS}ms ease-out`
-    : `opacity ${FADE_DURATION_MS}ms ease-in`;
+  const wrapperTransition = prefersReducedMotion
+    ? "none"
+    : dissolved
+      ? `opacity ${DISSOLVE_DURATION_MS}ms ease-out`
+      : `opacity ${FADE_DURATION_MS}ms ease-in`;
 
   // canvasOpacity fades canvas + formula together during species cycling.
   // wrapperOpacity fades the entire box (border included) during dissolution.
   return (
     <div
       aria-label={`Release ${species.name} into the field`}
-      className="relative cursor-pointer"
+      className="relative cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[hsl(var(--primary))]"
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
           handleClick();
         }
       }}
       role="button"
-      tabIndex={0}
+      tabIndex={dissolved ? -1 : 0}
       style={{
         border: "1px solid hsl(var(--border))",
         borderRadius: "2px",
