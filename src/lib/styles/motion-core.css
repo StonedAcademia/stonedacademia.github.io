@@ -1,0 +1,189 @@
+@keyframes motion-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-rail-draw {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes motion-text-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-heading-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.motion-app-shell,
+.motion-header,
+.motion-page {
+  animation: motion-page-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-app-shell {
+  isolation: isolate;
+  position: relative;
+  z-index: 1;
+}
+
+.motion-header {
+  animation-delay: 60ms;
+  position: relative;
+  z-index: 2;
+}
+
+.motion-theme {
+  animation: motion-popover-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-block,
+.motion-list-item,
+.motion-meta {
+  animation: motion-page-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(70ms + (var(--item-index, 0) * 48ms));
+}
+
+.motion-rail {
+  border-left-color: transparent;
+  position: relative;
+}
+
+.motion-rail::before {
+  background: hsl(var(--border));
+  content: "";
+  height: 100%;
+  left: -1px;
+  position: absolute;
+  top: 0;
+  transform-origin: top;
+  width: 1px;
+  animation: motion-rail-draw 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(90ms + (var(--item-index, 0) * 42ms));
+}
+
+.motion-list-item {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.motion-list-item:hover {
+  background: hsl(var(--accent) / 0.28);
+  transform: translateX(2px);
+}
+
+.motion-link {
+  transition:
+    color 160ms ease,
+    text-underline-offset 160ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.motion-link:hover {
+  text-underline-offset: 6px;
+  transform: translateY(-1px);
+}
+
+.motion-link:hover .motion-icon,
+.motion-button:hover .motion-icon,
+.motion-list-item:hover .motion-icon {
+  transform: translateY(-1px) rotate(-6deg);
+}
+
+.motion-separator {
+  opacity: 0.5;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.motion-header:hover .motion-separator {
+  color: hsl(var(--primary));
+  opacity: 1;
+}
+
+.motion-nav-item {
+  position: relative;
+}
+
+.motion-nav-item::after {
+  background: hsl(var(--primary));
+  bottom: -0.35rem;
+  content: "";
+  height: 1px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+}
+
+.motion-nav-item-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.motion-nav-item-active .motion-icon {
+  color: hsl(var(--primary));
+}

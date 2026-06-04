@@ -1,0 +1,78 @@
+.motion-button,
+.motion-control,
+.motion-chip,
+.motion-menu-item {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.motion-button:hover:not(:disabled),
+.motion-control:hover,
+.motion-control:focus-visible,
+.motion-chip:hover,
+.motion-menu-item:hover {
+  transform: translateY(-1px);
+}
+
+.motion-button:active:not(:disabled),
+.motion-chip:active,
+.motion-menu-item:active {
+  transform: translateY(0);
+}
+
+.motion-chip {
+  animation: motion-chip-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(90ms + (var(--item-index, 0) * 34ms));
+  transform-origin: center;
+}
+
+.motion-icon {
+  transform-origin: center;
+  transition:
+    opacity 160ms ease,
+    transform 190ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.motion-popover {
+  animation: motion-popover-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+}
+
+.motion-menu-item {
+  animation: motion-page-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--item-index, 0) * 34ms);
+}
+
+.pretext-text {
+  --pretext-lines: 1;
+  animation: motion-text-in
+    calc(220ms + (var(--pretext-lines, 1) * 18ms))
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(80ms + (var(--item-index, 0) * 36ms));
+}
+
+.pretext-text[data-pretext-ready="true"][data-pretext-reserve="true"] {
+  min-height: var(--pretext-height);
+}
+
+.pretext-text-heading {
+  animation-name: motion-heading-in;
+}
+
+.pretext-text-meta {
+  animation-duration: 240ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0ms !important;
+    animation-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
