@@ -43,6 +43,7 @@ export class AutomataTextBridge {
     }
 
     this.buildEdgeLookup(state);
+    this.stampGlyphBitmaps(state);
   }
 
   private buildEdgeLookup(state: AutomataState): void {
@@ -71,6 +72,71 @@ export class AutomataTextBridge {
 
       if (nearestIndex !== -1) {
         this.edgeLookup.set(cellIndex, nearestIndex);
+      }
+    }
+  }
+
+  private stampGlyphBitmaps(state: AutomataState): void {
+    for (const char of this.chars) {
+      if (!char.text.trim()) {
+        continue; // skip spaces — no glyph to render
+      }
+
+      const { rect, text, element } = char;
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+
+      const canvas = new OffscreenCanvas(w, h);
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        continue;
+      }
+
+      const styles = window.getComputedStyle(element);
+      const font =
+        styles.font ||
+        [
+          styles.fontStyle,
+          styles.fontVariant,
+          styles.fontWeight,
+          styles.fontSize,
+          styles.fontFamily,
+        ].join(" ");
+
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "white";
+      ctx.font = font;
+      ctx.textBaseline = "top";
+      ctx.fillText(text, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const pixels = imageData.data;
+
+      for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+          const brightness = pixels[(py * w + px) * 4]; // red channel from white glyph
+
+          if (brightness < 128) {
+            continue;
+          }
+
+          const screenX = rect.left + px;
+          const screenY = rect.top + py;
+          const cellX = Math.floor(screenX / state.cellSize);
+          const cellY = Math.floor(screenY / state.cellSize);
+
+          if (cellX < 0 || cellX >= state.cols || cellY < 0 || cellY >= state.rows) {
+            continue;
+          }
+
+          const cellIndex = cellY * state.cols + cellX;
+
+          if (!state.mask[cellIndex]) {
+            state.grid[cellIndex] = 1;
+          }
+        }
       }
     }
   }
