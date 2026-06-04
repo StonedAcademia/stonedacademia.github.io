@@ -553,10 +553,10 @@ The full `about-copy` div should look like:
   <PretextText
     className="automata-text-field max-w-2xl text-sm leading-7 text-muted-foreground"
     data-automata-field="about"
-    text="I hope to share my ideas, thoughts, and works in an attempt to articulate my ideas neatly."
+    text="I hope to share my ideas, thoughts, and works in an attempt to articulate myself neatly."
   >
     I hope to share my ideas, thoughts, and works in an attempt to
-    articulate my ideas neatly.
+    articulate myself neatly.
   </PretextText>
   <AutomataSpecimen />
 </div>
