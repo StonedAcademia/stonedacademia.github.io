@@ -5,6 +5,7 @@ import {
   type PrepareOptions,
 } from "@chenglou/pretext";
 import {
+  Fragment,
   createElement,
   useEffect,
   useRef,
@@ -60,21 +61,6 @@ export function AutomataText({
     "--pretext-lines": metrics.lineCount,
   } as CSSProperties;
 
-  const segments =
-    typeof Intl.Segmenter !== "undefined"
-      ? [...new Intl.Segmenter().segment(text)].map(({ segment }) => segment)
-      : [...text];
-
-  const chars = segments.map((char, i) =>
-    char.trim() === "" ? (
-      <span key={i}>{char}</span>
-    ) : (
-      <span key={i} data-automata-char={String(i)}>
-        {char}
-      </span>
-    ),
-  );
-
   return createElement(
     as,
     {
@@ -85,8 +71,41 @@ export function AutomataText({
       ref,
       style: measuredStyle,
     },
-    chars,
+    renderAutomataWords(text),
   );
+}
+
+function renderAutomataWords(text: string) {
+  let charIndex = 0;
+
+  return (text.match(/\s+|\S+/g) ?? []).map((part, partIndex) => {
+    if (part.trim() === "") {
+      return <Fragment key={`space-${partIndex}`}>{part}</Fragment>;
+    }
+
+    const chars = segmentText(part).map((char) => {
+      const index = charIndex;
+      charIndex += 1;
+
+      return (
+        <span key={index} data-automata-char={String(index)}>
+          {char}
+        </span>
+      );
+    });
+
+    return (
+      <span data-automata-word key={`word-${partIndex}`}>
+        {chars}
+      </span>
+    );
+  });
+}
+
+function segmentText(text: string) {
+  return typeof Intl.Segmenter !== "undefined"
+    ? [...new Intl.Segmenter().segment(text)].map(({ segment }) => segment)
+    : [...text];
 }
 
 function usePretextMetrics(
