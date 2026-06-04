@@ -2,12 +2,13 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 
+import { AutomataSpecimen } from "@/components/pages/about/automata-specimen";
 import { ShannonAutomataBackground } from "@/components/pages/about/shannon-automata-background";
 import { PretextText } from "@/lib/pretext/pretext-text";
 
 const aboutEquation = String.raw`$$
 \begin{aligned}
-  \int_V
+  \int
 \end{aligned}
 $$`;
 
@@ -44,6 +45,7 @@ export function AboutPage() {
           I hope to share my ideas, thoughts, and works in an attempt to
           articulate my ideas neatly.
         </PretextText>
+        <AutomataSpecimen />
       </div>
     </section>
   );
