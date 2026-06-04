@@ -149,9 +149,13 @@ export function AutomataSpecimen() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<AutomataState>(createSpecimenState());
   const speciesIndexRef = useRef(0);
+  const prefersReducedMotionRef = useRef(
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [speciesIndex, setSpeciesIndex] = useState(0);
   const [canvasOpacity, setCanvasOpacity] = useState(1);
   const [dissolved, setDissolved] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const dissolvedRef = useRef(false);
   const dissolveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -300,14 +304,12 @@ export function AutomataSpecimen() {
     displayMode: false,
   });
 
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
   const wrapperOpacity = dissolved ? 0 : 1;
-  const wrapperTransition = prefersReducedMotion
+  const wrapperTransition = prefersReducedMotionRef.current
     ? "none"
     : dissolved
-      ? `opacity ${DISSOLVE_DURATION_MS}ms ease-out`
-      : `opacity ${FADE_DURATION_MS}ms ease-in`;
+      ? `opacity ${DISSOLVE_DURATION_MS}ms ease-out, border-color 150ms`
+      : `opacity ${FADE_DURATION_MS}ms ease-in, border-color 150ms`;
 
   // canvasOpacity fades canvas + formula together during species cycling.
   // wrapperOpacity fades the entire box (border included) during dissolution.
@@ -322,10 +324,12 @@ export function AutomataSpecimen() {
           handleClick();
         }
       }}
+      onMouseEnter={() => { setHovered(true); }}
+      onMouseLeave={() => { setHovered(false); }}
       role="button"
       tabIndex={dissolved ? -1 : 0}
       style={{
-        border: "1px solid hsl(var(--border))",
+        border: hovered ? "1px solid hsl(var(--primary) / 0.35)" : "1px solid hsl(var(--border))",
         borderRadius: "2px",
         display: "inline-block",
         opacity: wrapperOpacity,
@@ -357,7 +361,8 @@ export function AutomataSpecimen() {
             color: "hsl(var(--primary))",
             fontSize: "10px",
             fontStyle: "italic",
-            opacity: 0.45,
+            opacity: hovered ? 0.65 : 0.45,
+            transition: "opacity 150ms",
           }}
         />
       </div>
