@@ -10,6 +10,7 @@ import {
 import { createAutomataState, indexOf, viewportSize } from "./automata/automata-model";
 import { drawField } from "./automata/automata-renderer";
 import { refreshTextField } from "./automata/automata-text-field";
+import { AutomataTextBridge } from "./automata/automata-text-bridge";
 
 const STEP_INTERVAL_MS = 82;
 
@@ -45,6 +46,7 @@ export function ShannonAutomataBackground() {
     let lastFieldRefresh = 0;
     let lastStep = 0;
     let tick = 0;
+    const bridge = new AutomataTextBridge();
     let state = createAutomataState(
       viewportSize().width,
       viewportSize().height,
@@ -62,6 +64,7 @@ export function ShannonAutomataBackground() {
 
       state = createAutomataState(viewport.width, viewport.height);
       refreshTextField(state);
+      bridge.init(state);
       seedField(state);
       drawField(canvasContext, state, tick);
     }
@@ -74,6 +77,7 @@ export function ShannonAutomataBackground() {
 
       if (!reducedMotion.matches && now - lastStep > STEP_INTERVAL_MS) {
         stepField(state);
+        bridge.update(state, tick);
         emitFromText(state, tick);
         emitFromEdges(state, tick);
         tick += 1;
@@ -107,6 +111,7 @@ export function ShannonAutomataBackground() {
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("automata:inject", handleInject);
       reducedMotion.removeEventListener("change", resizeCanvas);
+      bridge.destroy();
     };
   }, [portalTarget]);
 
