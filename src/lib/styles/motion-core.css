@@ -187,3 +187,22 @@
 .motion-nav-item-active .motion-icon {
   color: hsl(var(--primary));
 }
+
+[data-automata-char] {
+  display: inline-block;        /* required: transforms don't apply to inline elements */
+  vertical-align: baseline;     /* prevent inline-block from shifting line height */
+  opacity: calc(1 - var(--char-density, 0) * 0.5);
+  filter: hue-rotate(var(--char-hue-shift, 0deg));
+  transition: opacity 300ms ease, filter 300ms ease;
+}
+
+.automata-collision {
+  animation: automata-scale-pulse 500ms ease-out forwards;
+  transform-origin: center bottom;
+}
+
+@keyframes automata-scale-pulse {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
