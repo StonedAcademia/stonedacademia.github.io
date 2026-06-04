@@ -22,13 +22,11 @@
 
 @keyframes motion-text-in {
   from {
-    clip-path: inset(0 0 100% 0);
     opacity: 0;
     transform: translateY(4px);
   }
 
   to {
-    clip-path: inset(0 0 0 0);
     opacity: 1;
     transform: translateY(0);
   }
@@ -203,10 +201,7 @@
   transition: opacity 300ms ease, filter 300ms ease, color 300ms ease;
 }
 
-[data-automata-word] {
-  display: inline-block;
-  white-space: nowrap;
-}
+[data-automata-word] { display: inline-block; white-space: nowrap; }
 
 .automata-collision {
   animation: automata-scale-pulse 500ms ease-out forwards;
@@ -223,12 +218,11 @@
 /* KaTeX glyph collision — brightness pulse (transform: scale doesn't apply to inline spans) */
 .katex-html .automata-collision {
   animation: automata-katex-pulse 500ms ease-out forwards;
-  color: hsl(var(--primary));
 }
 
 @keyframes automata-katex-pulse {
-  0%   { filter: brightness(2.2); }
-  100% { filter: brightness(1); }
+  0%   { filter: brightness(2.2); color: hsl(var(--primary)); }
+  100% { filter: brightness(1); color: hsl(var(--primary)); }
 }
 
 /* Graphviz node collision — opacity flash + primary glow */
