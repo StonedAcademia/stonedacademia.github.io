@@ -20,6 +20,8 @@ export type AutomataState = {
 
 export type Pattern = ReadonlyArray<readonly [number, number]>;
 
+export const SPAWNER_BLOCKER_PADDING_CELLS = 3;
+
 export const GLIDER: Pattern = [
   [1, 0],
   [2, 1],
