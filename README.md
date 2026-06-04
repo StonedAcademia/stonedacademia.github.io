@@ -45,3 +45,4 @@ bun run build
 
 The build script copies `dist/index.html` to `dist/404.html` so GitHub Pages can
 serve direct links such as `/blog/first-post.md`.
+
