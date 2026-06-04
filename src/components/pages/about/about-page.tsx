@@ -8,7 +8,7 @@ import { AutomataText } from "@/components/pages/about/automata-text";
 
 const aboutEquation = String.raw`$$
 \begin{aligned}
-  \int_V
+  \int
 \end{aligned}
 $$`;
 
