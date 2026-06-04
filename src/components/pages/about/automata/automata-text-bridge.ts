@@ -53,17 +53,15 @@ export class AutomataTextBridge {
 
       const cellCol = cellIndex % state.cols;
       const cellRow = Math.floor(cellIndex / state.cols);
-      const cx = cellCol * state.cellSize + state.cellSize / 2;
-      const cy = cellRow * state.cellSize + state.cellSize / 2;
 
       let nearestIndex = -1;
       let nearestDist = Infinity;
 
       for (let i = 0; i < this.chars.length; i++) {
         const { rect } = this.chars[i];
-        const charCx = rect.left + rect.width / 2;
-        const charCy = rect.top + rect.height / 2;
-        const dist = Math.hypot(cx - charCx, cy - charCy);
+        const charCellCx = (rect.left + rect.width / 2) / state.cellSize;
+        const charCellCy = (rect.top + rect.height / 2) / state.cellSize;
+        const dist = Math.hypot(cellCol + 0.5 - charCellCx, cellRow + 0.5 - charCellCy);
 
         if (dist < nearestDist) {
           nearestDist = dist;
