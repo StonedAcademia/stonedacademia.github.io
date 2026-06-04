@@ -9,18 +9,35 @@ import {
   removeActiveCell,
 } from "./visual-entity-pool";
 
+/**
+ * Per-cell render state layered on top of the discrete automata grid.
+ *
+ * @remarks
+ * Active-cell arrays let renderers iterate only visible or fading cells instead
+ * of scanning the whole grid every frame.
+ */
 export type AutomataVisualState = {
+  /** Milliseconds since the current visual birth of each cell. */
   ageMs: Float32Array;
+  /** Packed list of cells currently visible or fading. */
   activeCells: Int32Array;
+  /** Reverse lookup from cell index to active slot, or `-1`. */
   activeSlots: Int32Array;
+  /** Number of valid entries in `activeCells`. */
   activeCount: number;
+  /** Per-cell opacity target/interpolation state. */
   alpha: Float32Array;
+  /** Birth offset on the x axis, easing back toward zero. */
   offsetX: Float32Array;
+  /** Birth offset on the y axis, easing back toward zero. */
   offsetY: Float32Array;
+  /** Snapshot from the previous generation for birth/death detection. */
   previousGrid: Uint8Array;
+  /** Per-cell size interpolation state. */
   scale: Float32Array;
 };
 
+/** Creates render state sized to the automata grid and synced to live cells. */
 export function createVisualState(state: AutomataState) {
   const length = state.grid.length;
   const visualState: AutomataVisualState = {
@@ -40,6 +57,7 @@ export function createVisualState(state: AutomataState) {
   return visualState;
 }
 
+/** Resets all visual arrays to match the current discrete grid exactly. */
 export function syncVisualState(
   visualState: AutomataVisualState,
   state: AutomataState,
@@ -63,6 +81,13 @@ export function syncVisualState(
   }
 }
 
+/**
+ * Captures newly born and newly dead cells after a simulation generation.
+ *
+ * @remarks
+ * Births are primed with offsets from their parent cluster, while deaths remain
+ * active long enough for `updateVisualState` to fade them out.
+ */
 export function captureVisualGeneration(
   visualState: AutomataVisualState,
   state: AutomataState,
@@ -89,6 +114,7 @@ export function captureVisualGeneration(
   }
 }
 
+/** Advances all active visual cells toward their current alive/dead targets. */
 export function updateVisualState(
   visualState: AutomataVisualState,
   state: AutomataState,
@@ -150,10 +176,12 @@ export function updateVisualState(
   }
 }
 
+/** Subtle per-cell breathing scale so live cells do not look mechanically static. */
 export function cellBreath(cellIndex: number, ageMs: number) {
   return 1 + Math.sin(ageMs / 620 + (cellIndex % 19)) * 0.035;
 }
 
+/** Initializes the visual state for a newly born cell. */
 function primeBirth(
   visualState: AutomataVisualState,
   state: AutomataState,
@@ -172,6 +200,7 @@ function primeBirth(
       : 0.32;
 }
 
+/** Pulls a newborn cell from the average direction of its previous neighbors. */
 function parentClusterOffset(
   visualState: AutomataVisualState,
   state: AutomataState,

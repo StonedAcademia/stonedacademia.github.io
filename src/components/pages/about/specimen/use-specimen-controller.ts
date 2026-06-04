@@ -1,5 +1,6 @@
 import {
   type CSSProperties,
+  type RefObject,
   useCallback,
   useEffect,
   useId,
@@ -27,11 +28,40 @@ import {
   SPECIMEN_COLS,
   SPECIMEN_ROWS,
   STEP_INTERVAL_MS,
+  type Species,
 } from "./specimen-species";
 
+/** Horizontal side used for the tooltip relative to the specimen control. */
 type TooltipSide = "left" | "right";
 
-export function useSpecimenController() {
+/** Controller values consumed by the specimen view component. */
+type SpecimenController = {
+  /** Canvas ref used by the animation loop. */
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  /** CSS custom properties applied to the focusable specimen control. */
+  controlStyle: CSSProperties;
+  /** Closes the explanatory tooltip. */
+  hideTooltip: () => void;
+  /** Opens the tooltip and recalculates its preferred side. */
+  showTooltip: () => void;
+  /** Currently displayed specimen metadata. */
+  species: Species;
+  /** Stable id for `aria-describedby`. */
+  tooltipId: string;
+  /** Whether the tooltip is visible. */
+  tooltipOpen: boolean;
+  /** Side chosen for the tooltip to avoid viewport overflow. */
+  tooltipSide: TooltipSide;
+};
+
+/**
+ * Owns animation, cycling, tooltip, and canvas state for `AutomataSpecimen`.
+ *
+ * @remarks
+ * React state only tracks UI-visible values; mutable simulation and visual
+ * buffers live in refs so animation frames do not rerender the component.
+ */
+export function useSpecimenController(): SpecimenController {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<AutomataState>(createSpecimenState());
   const visualStateRef = useRef<AutomataVisualState>(
@@ -49,12 +79,14 @@ export function useSpecimenController() {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const species = SPECIES[speciesIndex];
 
+  /** Advances to the next species while keeping the ref and React state aligned. */
   const advanceSpecies = useCallback(() => {
     const next = (speciesIndexRef.current + 1) % SPECIES.length;
     speciesIndexRef.current = next;
     setSpeciesIndex(next);
   }, []);
 
+  /** Keeps timer callbacks aware of tooltip state without resubscribing. */
   useEffect(() => {
     tooltipOpenRef.current = tooltipOpen;
 
@@ -64,6 +96,7 @@ export function useSpecimenController() {
     }
   }, [tooltipOpen]);
 
+  /** Initializes the canvas for the active species and runs its animation loop. */
   useEffect(() => {
     const canvas = canvasRef.current;
 
@@ -84,6 +117,7 @@ export function useSpecimenController() {
     let lastRender = performance.now();
     let lastStep = 0;
 
+    // Backing pixels are scaled for crisp canvas rendering on high-DPI displays.
     canvas.width = Math.floor(
       SPECIMEN_COLS * SPECIMEN_CELL_SIZE * pixelRatio,
     );
@@ -95,6 +129,7 @@ export function useSpecimenController() {
     seedSpecies(stateRef.current, species);
     visualStateRef.current = createSpecimenVisualState(stateRef.current);
 
+    /** Draws every frame and advances Conway generations when motion is allowed. */
     function animate(now: number) {
       const deltaMs = Math.min(now - lastRender, 48);
       lastRender = now;
@@ -121,6 +156,7 @@ export function useSpecimenController() {
     };
   }, [species]);
 
+  /** Cycles specimens automatically, pausing while the tooltip is being read. */
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const timer = setInterval(() => {
@@ -151,6 +187,7 @@ export function useSpecimenController() {
     };
   }, [advanceSpecies]);
 
+  /** Opens the tooltip on the side with the most viewport space. */
   const showTooltip = useCallback(() => {
     setTooltipSide(tooltipSideFor(canvasRef.current));
     setTooltipOpen(true);
@@ -170,6 +207,7 @@ export function useSpecimenController() {
   };
 }
 
+/** Chooses the tooltip side that is less likely to overflow the viewport. */
 function tooltipSideFor(canvas: HTMLCanvasElement | null): TooltipSide {
   const rect = canvas
     ?.closest<HTMLElement>("[data-automata-blocker='spawner']")

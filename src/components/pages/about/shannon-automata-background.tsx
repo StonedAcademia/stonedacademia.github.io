@@ -16,8 +16,16 @@ import {
 import { refreshTextField } from "./automata/automata-text-field";
 import { AutomataTextBridge } from "./automata/text/automata-text-bridge";
 
+/** Delay between Conway generations for the background field. */
 const STEP_INTERVAL_MS = 110;
 
+/**
+ * Full-viewport canvas that lets Conway-style patterns interact with page text.
+ *
+ * @remarks
+ * The canvas is portaled to `document.body` so it can sit behind every page
+ * section while the component remains owned by the about page.
+ */
 export function ShannonAutomataBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
@@ -58,6 +66,9 @@ export function ShannonAutomataBackground() {
     );
     let visualState = createVisualState(state);
 
+    /**
+     * Rebuilds canvas backing pixels, simulation arrays, text masks, and visuals.
+     */
     function resizeCanvas() {
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       const viewport = viewportSize();
@@ -78,6 +89,7 @@ export function ShannonAutomataBackground() {
       drawField(canvasContext, state, tick, visualState, 1000 / 300);
     }
 
+    /** Runs render frames continuously and simulation steps at a lower cadence. */
     function animate(now: number) {
       const deltaMs = Math.min(now - lastRender, 48);
       lastRender = now;

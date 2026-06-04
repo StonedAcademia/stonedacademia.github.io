@@ -1,5 +1,12 @@
 import { type AutomataState } from "../automata-model";
 
+/**
+ * Rasterizes a single glyph into the automata grid cells it visually occupies.
+ *
+ * @remarks
+ * Canvas rasterization makes collision zones match the actual font rather than
+ * the looser DOM rectangle around each character.
+ */
 export function glyphInteractionCells(
   state: AutomataState,
   element: Element,
@@ -44,6 +51,7 @@ export function glyphInteractionCells(
   return [...cells];
 }
 
+/** Maps a DOM rectangle to every automata cell overlapped by its bounds. */
 export function rectInteractionCells(state: AutomataState, rect: DOMRect) {
   const left = Math.max(0, Math.floor(rect.left / state.cellSize));
   const right = Math.min(state.cols - 1, Math.ceil(rect.right / state.cellSize));
@@ -60,6 +68,7 @@ export function rectInteractionCells(state: AutomataState, rect: DOMRect) {
   return cells;
 }
 
+/** Marks interaction cells and their neighbors as text-edge cells. */
 export function markGlyphEdges(state: AutomataState, cells: number[]) {
   for (const cellIndex of cells) {
     const x = cellIndex % state.cols;
@@ -78,6 +87,7 @@ export function markGlyphEdges(state: AutomataState, cells: number[]) {
   }
 }
 
+/** Creates a throwaway canvas, preferring `OffscreenCanvas` when available. */
 function createGlyphCanvas(width: number, height: number) {
   if (typeof OffscreenCanvas !== "undefined") {
     return new OffscreenCanvas(width, height);
@@ -89,6 +99,7 @@ function createGlyphCanvas(width: number, height: number) {
   return canvas;
 }
 
+/** Builds a canvas-compatible font shorthand when `computedStyle.font` is empty. */
 function canvasFont(styles: CSSStyleDeclaration) {
   return [
     styles.fontStyle,

@@ -5,27 +5,49 @@ import {
   rectInteractionCells,
 } from "./glyph-cells";
 
+/** Kinds of DOM element the automata bridge can sample and annotate. */
 type EntryKind = "char" | "katex" | "graphviz";
 
+/** Cached DOM geometry and interaction cells for one sampled text-like element. */
 type BridgeEntry = {
+  /** Persistent collision timing state for this DOM element. */
   collision: CollisionState;
+  /** Renderer-specific behavior for feedback and collision effects. */
   kind: EntryKind;
+  /** Source DOM element that receives CSS variables or collision classes. */
   element: Element;
+  /** Automata cells occupied by the element at the last layout refresh. */
   interactionCells: number[];
+  /** Last measured browser rectangle. */
   rect: DOMRect;
+  /** Text payload used for glyph rasterization or diagnostics. */
   text: string;
 };
 
+/** Per-element collision debouncing so pulses do not restart every frame. */
 type CollisionState = {
+  /** Last automata tick that triggered the pulse animation. */
   lastPulsedTick: number;
+  /** Whether the previous update still had a live cell nearby. */
   wasColliding: boolean;
 };
 
+/**
+ * Bridges DOM text, math, and diagrams into the canvas automata simulation.
+ *
+ * @remarks
+ * `init` samples layout and marks edge cells; `update` writes CSS feedback and
+ * collision classes. Keeping this class stateful lets WeakMap collision timing
+ * survive layout refreshes for the same DOM nodes.
+ */
 export class AutomataTextBridge {
   private collisionStates = new WeakMap<Element, CollisionState>();
   private entries: BridgeEntry[] = [];
   private pendingTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
+  /**
+   * Rebuilds sampled entries from the current DOM and marks their grid edges.
+   */
   init(state: AutomataState): void {
     for (const entry of this.entries) {
       if (entry.kind !== "graphviz") {
@@ -36,6 +58,7 @@ export class AutomataTextBridge {
 
     this.entries = [];
 
+    // Plain automata text wraps each visible glyph in `data-automata-char`.
     for (const span of document.querySelectorAll<HTMLSpanElement>("[data-automata-char]")) {
       const rect = span.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) continue;
@@ -52,6 +75,7 @@ export class AutomataTextBridge {
       });
     }
 
+    // KaTeX creates nested spans; leaf spans are the closest glyph equivalent.
     for (const container of document.querySelectorAll<HTMLElement>("[data-automata-field] .katex-html")) {
       for (const span of collectKaTeXLeafSpans(container)) {
         const rect = span.getBoundingClientRect();
@@ -70,6 +94,7 @@ export class AutomataTextBridge {
       }
     }
 
+    // Graphviz nodes use full rectangles because text is inside SVG groups.
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-automata-field] svg")) {
       for (const group of svg.querySelectorAll<SVGGElement>("g.node")) {
         const rect = group.getBoundingClientRect();
@@ -86,6 +111,7 @@ export class AutomataTextBridge {
     }
   }
 
+  /** Applies visual feedback and collision pulses for the current automata tick. */
   update(state: AutomataState, tick: number): void {
     if (tick % 4 === 0) {
       this.updateFeedback(state);
@@ -93,6 +119,7 @@ export class AutomataTextBridge {
     this.updateCollisions(state, tick);
   }
 
+  /** Clears delayed class-removal timers created by collision pulses. */
   destroy(): void {
     for (const id of this.pendingTimeouts) {
       clearTimeout(id);
@@ -100,6 +127,7 @@ export class AutomataTextBridge {
     this.pendingTimeouts.clear();
   }
 
+  /** Updates per-glyph density and entropy CSS variables. */
   private updateFeedback(state: AutomataState): void {
     for (const entry of this.entries) {
       if (entry.kind === "graphviz") continue;
@@ -124,6 +152,7 @@ export class AutomataTextBridge {
     }
   }
 
+  /** Adds a throttled collision class when a live cell intersects an entry. */
   private updateCollisions(state: AutomataState, tick: number): void {
     for (const entry of this.entries) {
       const hasNearbyCell = entry.interactionCells.some(
@@ -146,7 +175,8 @@ export class AutomataTextBridge {
       entry.collision.lastPulsedTick = tick;
       entry.collision.wasColliding = true;
       entry.element.classList.remove("automata-collision");
-      void entry.element.getBoundingClientRect(); // force reflow to restart the animation
+      // Force reflow so re-adding the class restarts the CSS animation.
+      void entry.element.getBoundingClientRect();
       entry.element.classList.add("automata-collision");
 
       const timeoutId = setTimeout(() => {
@@ -157,6 +187,7 @@ export class AutomataTextBridge {
     }
   }
 
+  /** Returns persistent collision timing for an element, creating it on demand. */
   private collisionStateFor(element: Element): CollisionState {
     const state = this.collisionStates.get(element);
 
@@ -170,6 +201,7 @@ export class AutomataTextBridge {
   }
 }
 
+/** Finds KaTeX spans that directly contain visible text. */
 function collectKaTeXLeafSpans(root: Element): HTMLSpanElement[] {
   const leaves: HTMLSpanElement[] = [];
   for (const span of root.querySelectorAll<HTMLSpanElement>("span")) {

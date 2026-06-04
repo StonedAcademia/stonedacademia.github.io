@@ -1,3 +1,6 @@
+/**
+ * Fills a rounded rectangle with a `roundRect` fallback for older canvas APIs.
+ */
 export function fillRoundedRect(
   context: CanvasRenderingContext2D,
   x: number,

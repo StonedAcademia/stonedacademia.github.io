@@ -6,12 +6,14 @@ import { AutomataSpecimen } from "@/components/pages/about/automata-specimen";
 import { ShannonAutomataBackground } from "@/components/pages/about/shannon-automata-background";
 import { AutomataText } from "@/components/pages/about/automata-text";
 
+/** Minimal KaTeX field used as an automata-sensitive visual mark. */
 const aboutEquation = String.raw`$$
 \begin{aligned}
   \int
 \end{aligned}
 $$`;
 
+/** Landing/about page combining motion text with the background automata field. */
 export function AboutPage() {
   return (
     <section className="about-page motion-page flex min-h-[calc(100vh-12rem)] flex-col">

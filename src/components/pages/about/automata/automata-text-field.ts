@@ -5,8 +5,16 @@ import {
   type AutomataState,
 } from "./automata-model";
 
+/** Selector for foreground controls that should repel the background field. */
 const BLOCKER_SELECTOR = "[data-automata-blocker='spawner']";
 
+/**
+ * Rebuilds text-edge and blocker masks from the current DOM layout.
+ *
+ * @remarks
+ * The bridge populates glyph edges separately; this pass owns non-text blockers
+ * and clears live cells that now fall under those blockers.
+ */
 export function refreshTextField(state: AutomataState) {
   state.edge.fill(0);
   state.mask.fill(0);
@@ -25,6 +33,7 @@ export function refreshTextField(state: AutomataState) {
   clearMaskedCells(state);
 }
 
+/** Marks a circular mask around a foreground element's bounding box. */
 function markBlockerRadius(state: AutomataState, rect: DOMRect) {
   const centerX = (rect.left + rect.right) / 2;
   const centerY = (rect.top + rect.bottom) / 2;

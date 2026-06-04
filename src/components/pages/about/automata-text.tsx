@@ -16,6 +16,7 @@ import {
 
 import { cn } from "@/lib/utils";
 
+/** HTML elements this wrapper can safely measure and create dynamically. */
 type MeasuredTextElement =
   | "div"
   | "footer"
@@ -26,21 +27,39 @@ type MeasuredTextElement =
   | "p"
   | "span";
 
+/** Layout information exported to CSS so text motion reserves stable space. */
 type PretextMetrics = {
+  /** Pixel height computed from pretext line layout. */
   height: number;
+  /** Number of wrapped lines at the element's current width. */
   lineCount: number;
+  /** Indicates that the first browser measurement has completed. */
   ready: boolean;
 };
 
+/** Props for text that is both pretext-measured and automata-addressable. */
 type AutomataTextProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
+  /** Motion timing variant, reflected in the generated CSS class. */
   animation?: "body" | "heading" | "meta";
+  /** Element tag to create while retaining one measurement implementation. */
   as?: MeasuredTextElement;
+  /** Stagger index exposed as `--item-index`. */
   index?: number;
+  /** Whether CSS should reserve the measured text height before reveal. */
   reserveHeight?: boolean;
+  /** Plain text split into per-character collision spans. */
   text: string;
+  /** Whitespace mode passed through to `@chenglou/pretext`. */
   whiteSpace?: PrepareOptions["whiteSpace"];
 };
 
+/**
+ * Renders measured text whose visible glyphs can interact with the automata field.
+ *
+ * @remarks
+ * The DOM shape preserves word spacing while assigning stable
+ * `data-automata-char` indices for the background collision bridge.
+ */
 export function AutomataText({
   animation = "body",
   as = "p",
@@ -75,6 +94,7 @@ export function AutomataText({
   );
 }
 
+/** Splits text into word containers and character spans without losing spaces. */
 function renderAutomataWords(text: string) {
   let charIndex = 0;
 
@@ -102,12 +122,20 @@ function renderAutomataWords(text: string) {
   });
 }
 
+/** Segments text by grapheme when the browser provides `Intl.Segmenter`. */
 function segmentText(text: string) {
   return typeof Intl.Segmenter !== "undefined"
     ? [...new Intl.Segmenter().segment(text)].map(({ segment }) => segment)
     : [...text];
 }
 
+/**
+ * Measures a text node with pretext whenever its width, font, or content changes.
+ *
+ * @remarks
+ * The automata text component duplicates the generic pretext measurement path
+ * because its children must be glyph-addressable spans rather than raw text.
+ */
 function usePretextMetrics(
   ref: React.RefObject<HTMLElement | null>,
   text: string,
@@ -130,6 +158,7 @@ function usePretextMetrics(
     let prepared: PreparedText | undefined;
     let preparedKey = "";
 
+    /** Batches expensive measurement work into the next animation frame. */
     function update(widthHint?: number) {
       cancelAnimationFrame(animationFrame);
       animationFrame = window.requestAnimationFrame(() => {
@@ -197,6 +226,7 @@ function usePretextMetrics(
   return metrics;
 }
 
+/** Builds a canvas-compatible font shorthand when `computedStyle.font` is empty. */
 function canvasFont(styles: CSSStyleDeclaration) {
   return [
     styles.fontStyle,
@@ -207,6 +237,7 @@ function canvasFont(styles: CSSStyleDeclaration) {
   ].join(" ");
 }
 
+/** Resolves CSS line-height to pixels, with a readable fallback for `normal`. */
 function lineHeightPixels(styles: CSSStyleDeclaration) {
   const lineHeight = pixelValue(styles.lineHeight);
 
@@ -217,6 +248,7 @@ function lineHeightPixels(styles: CSSStyleDeclaration) {
   return pixelValue(styles.fontSize) * 1.45;
 }
 
+/** Parses a CSS pixel-like numeric value. */
 function pixelValue(value: string) {
   return Number.parseFloat(value);
 }

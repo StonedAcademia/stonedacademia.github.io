@@ -7,6 +7,13 @@ import {
   type AutomataState,
 } from "./automata-model";
 
+/**
+ * Seeds the background field with mobile patterns launched from viewport edges.
+ *
+ * @remarks
+ * The density scales with grid area while preserving a minimum number of
+ * movers, then masked UI cells are cleared so foreground controls stay readable.
+ */
 export function seedField(state: AutomataState) {
   state.grid.fill(0);
 
@@ -39,6 +46,9 @@ export function seedField(state: AutomataState) {
   clearMaskedCells(state);
 }
 
+/**
+ * Advances the masked toroidal field by one Conway B3/S23 generation.
+ */
 export function stepField(state: AutomataState) {
   const { buffer, cols, grid, mask, rows } = state;
 
@@ -74,6 +84,13 @@ export function stepField(state: AutomataState) {
   state.buffer = grid;
 }
 
+/**
+ * Periodically launches gliders from text-derived emitters.
+ *
+ * @remarks
+ * `AutomataTextBridge` refreshes the emitters from DOM layout; this function
+ * only consumes the current list so simulation and measurement stay decoupled.
+ */
 export function emitFromText(state: AutomataState, tick: number) {
   if (!state.emitters.length || tick % 16 !== 0) {
     return;
@@ -83,6 +100,7 @@ export function emitFromText(state: AutomataState, tick: number) {
   stampPattern(state, GLIDER, emitter.x, emitter.y, emitter.direction);
 }
 
+/** Periodically injects edge-born gliders and spaceships into the field. */
 export function emitFromEdges(state: AutomataState, tick: number) {
   if (tick % 28 !== 0) {
     return;

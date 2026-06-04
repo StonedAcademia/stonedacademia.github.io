@@ -6,6 +6,13 @@ import {
 } from "./rendering/automata-visual-state";
 import { fillRoundedRect } from "./rendering/rounded-rect";
 
+/**
+ * Draws one animation frame for the full-screen automata background.
+ *
+ * @remarks
+ * Simulation state is discrete, while `visualState` interpolates alpha, scale,
+ * and birth offsets so canvas frames remain smooth between B3/S23 ticks.
+ */
 export function drawField(
   context: CanvasRenderingContext2D,
   state: AutomataState,
@@ -57,6 +64,7 @@ export function drawField(
   context.globalAlpha = 1;
 }
 
+/** Cubic smoothstep used to soften alpha and scale transitions. */
 function smoothIntensity(value: number) {
   return value * value * (3 - 2 * value);
 }

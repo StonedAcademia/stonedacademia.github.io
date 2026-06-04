@@ -17,6 +17,7 @@ import {
   type Species,
 } from "./specimen-species";
 
+/** Creates the fixed-size automata state used by the specimen canvas. */
 export function createSpecimenState(): AutomataState {
   const length = SPECIMEN_COLS * SPECIMEN_ROWS;
 
@@ -33,12 +34,14 @@ export function createSpecimenState(): AutomataState {
   };
 }
 
+/** Clears the specimen grid and stamps the selected species into place. */
 export function seedSpecies(state: AutomataState, species: Species) {
   state.grid.fill(0);
   state.buffer.fill(0);
   stampPattern(state, species.pattern, species.originX, species.originY, "se");
 }
 
+/** Advances the fixed specimen grid by one Conway B3/S23 generation. */
 export function stepSpecimen(state: AutomataState) {
   const { buffer, cols, grid, rows } = state;
 
@@ -69,6 +72,9 @@ export function stepSpecimen(state: AutomataState) {
   state.buffer = grid;
 }
 
+/**
+ * Draws one frame of the specimen canvas using the shared visual interpolation.
+ */
 export function drawSpecimen(
   context: CanvasRenderingContext2D,
   state: AutomataState,
@@ -118,10 +124,12 @@ export function drawSpecimen(
   context.globalAlpha = 1;
 }
 
+/** Creates a visual state for the specimen through the shared automata renderer. */
 export function createSpecimenVisualState(state: AutomataState) {
   return createVisualState(state);
 }
 
+/** Cubic smoothstep used to soften specimen alpha and scale transitions. */
 function smoothIntensity(value: number) {
   return value * value * (3 - 2 * value);
 }
