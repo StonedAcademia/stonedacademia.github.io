@@ -65,11 +65,15 @@ export function AutomataText({
       ? [...new Intl.Segmenter().segment(text)].map(({ segment }) => segment)
       : [...text];
 
-  const chars = segments.map((char, i) => (
-    <span key={i} data-automata-char={String(i)}>
-      {char}
-    </span>
-  ));
+  const chars = segments.map((char, i) =>
+    char.trim() === "" ? (
+      <span key={i}>{char}</span>
+    ) : (
+      <span key={i} data-automata-char={String(i)}>
+        {char}
+      </span>
+    ),
+  );
 
   return createElement(
     as,
