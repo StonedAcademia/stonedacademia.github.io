@@ -13,26 +13,50 @@ export function refreshTextField(state: AutomataState) {
   state.mask.fill(0);
   state.emitters = [];
 
-  // Emitters at field element corners (element-level bounding box).
   const fieldElements = document.querySelectorAll<HTMLElement>(TEXT_FIELD_SELECTOR);
 
   for (const element of fieldElements) {
-    const rect = element.getBoundingClientRect();
+    const charSpans = element.querySelectorAll<HTMLElement>("[data-automata-char]");
 
-    if (rect.width > 0 && rect.height > 0) {
-      placeFieldEmitters(state, rect);
-    }
-  }
+    if (charSpans.length > 0) {
+      // Element uses AutomataText: mask each glyph individually and place
+      // emitters at the bounding box of the actual text content, not the
+      // full element box.
+      let minLeft = Infinity;
+      let minTop = Infinity;
+      let maxRight = -Infinity;
+      let maxBottom = -Infinity;
 
-  // Mask individual character spans — avoids a dead-zone border around the
-  // entire element box when the element is wider than the text content.
-  const charSpans = document.querySelectorAll<HTMLElement>("[data-automata-char]");
+      for (const span of charSpans) {
+        const rect = span.getBoundingClientRect();
 
-  for (const span of charSpans) {
-    const rect = span.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) {
+          continue;
+        }
 
-    if (rect.width > 0 && rect.height > 0) {
-      maskCharRect(state, rect);
+        maskCharRect(state, rect);
+
+        if (rect.left < minLeft) minLeft = rect.left;
+        if (rect.top < minTop) minTop = rect.top;
+        if (rect.right > maxRight) maxRight = rect.right;
+        if (rect.bottom > maxBottom) maxBottom = rect.bottom;
+      }
+
+      if (Number.isFinite(minLeft)) {
+        placeFieldEmitters(
+          state,
+          new DOMRect(minLeft, minTop, maxRight - minLeft, maxBottom - minTop),
+        );
+      }
+    } else {
+      // Element has no char spans (e.g. KaTeX equation): mask the element
+      // rect directly so cells don't flow through it, but skip emitters so
+      // gliders don't appear to originate from the element border.
+      const rect = element.getBoundingClientRect();
+
+      if (rect.width > 0 && rect.height > 0) {
+        maskCharRect(state, rect);
+      }
     }
   }
 
