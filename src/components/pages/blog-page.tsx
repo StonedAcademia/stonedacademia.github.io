@@ -69,6 +69,10 @@ export function BlogPage({
       >
         {post.body}
       </ReactMarkdown>
+
+      <footer className="mt-10 border-l border-border pl-4 text-xs text-muted-foreground">
+        {post.readingTime}
+      </footer>
     </article>
   );
 }

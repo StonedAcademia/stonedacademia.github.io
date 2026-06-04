@@ -1,3 +1,5 @@
+import readingTime from "reading-time/lib/reading-time";
+
 export type BlogPost = {
   slug: string;
   path: string;
@@ -5,6 +7,7 @@ export type BlogPost = {
   date: string;
   description: string;
   tags: string[];
+  readingTime: string;
   body: string;
 };
 
@@ -121,6 +124,7 @@ function parsePost(filePath: string, raw: string): BlogPost {
     date: stringField(fields, "date"),
     description: stringField(fields, "description"),
     tags: tagsField(fields),
+    readingTime: readingTime(body).text,
     body,
   };
 }
