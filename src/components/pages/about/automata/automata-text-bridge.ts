@@ -182,7 +182,26 @@ export class AutomataTextBridge {
     }
   }
 
-  private updateCollisions(_state: AutomataState, _tick: number): void {
-    // implemented in Task 6
+  private updateCollisions(state: AutomataState, tick: number): void {
+    for (const [cellIndex, charIndex] of this.edgeLookup) {
+      if (!state.grid[cellIndex]) {
+        continue;
+      }
+
+      const char = this.chars[charIndex];
+
+      if (tick - char.lastPulsedTick < 60) {
+        continue; // ~5s cooldown — prevents oscillators from spamming a letter
+      }
+
+      char.lastPulsedTick = tick;
+      char.element.classList.remove("automata-collision");
+      void char.element.offsetWidth; // force reflow to restart the animation
+      char.element.classList.add("automata-collision");
+
+      setTimeout(() => {
+        char.element.classList.remove("automata-collision");
+      }, 500);
+    }
   }
 }
