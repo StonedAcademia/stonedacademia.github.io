@@ -152,6 +152,7 @@ export function AutomataSpecimen() {
   const [canvasOpacity, setCanvasOpacity] = useState(1);
   const [dissolved, setDissolved] = useState(false);
   const dissolvedRef = useRef(false);
+  const dissolveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // animation loop — re-runs when speciesIndex changes to reseed
   useEffect(() => {
@@ -198,6 +199,8 @@ export function AutomataSpecimen() {
 
   // species cycling — auto-advances every CYCLE_INTERVAL_MS
   useEffect(() => {
+    let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
+
     const timer = setInterval(() => {
       if (dissolvedRef.current) {
         return;
@@ -205,7 +208,12 @@ export function AutomataSpecimen() {
 
       setCanvasOpacity(0);
 
-      setTimeout(() => {
+      fadeTimeout = setTimeout(() => {
+        if (dissolvedRef.current) {
+          // click happened during fade — cancel this transition, click handler owns species advancement
+          setCanvasOpacity(1);
+          return;
+        }
         const next = (speciesIndexRef.current + 1) % SPECIES.length;
         speciesIndexRef.current = next;
         setSpeciesIndex(next);
@@ -215,6 +223,7 @@ export function AutomataSpecimen() {
 
     return () => {
       clearInterval(timer);
+      clearTimeout(fadeTimeout);
     };
   }, []);
 
@@ -269,13 +278,19 @@ export function AutomataSpecimen() {
     dissolvedRef.current = true;
     setDissolved(true);
 
-    setTimeout(() => {
+    dissolveTimeoutRef.current = setTimeout(() => {
       const next = (speciesIndexRef.current + 1) % SPECIES.length;
       speciesIndexRef.current = next;
       setSpeciesIndex(next);
       setDissolved(false);
       dissolvedRef.current = false;
     }, DISSOLVE_DURATION_MS + RESEED_DELAY_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(dissolveTimeoutRef.current);
+    };
   }, []);
 
   const species = SPECIES[speciesIndex];
