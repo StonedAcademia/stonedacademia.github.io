@@ -4,8 +4,74 @@
 }
 
 .automata-spawner-stage {
+  margin-inline: auto;
   position: relative;
   width: fit-content;
+}
+
+.automata-rule-equation {
+  border-left: 1px solid hsl(var(--primary) / 0.34);
+  color: hsl(var(--muted-foreground));
+  display: grid;
+  gap: 0.7rem;
+  margin-inline: auto;
+  max-width: min(34rem, calc(100vw - 2rem));
+  padding: 0.8rem 0 0.85rem 1rem;
+  position: relative;
+  width: min(34rem, calc(100vw - 2rem));
+}
+
+.automata-rule-equation::before {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary) / 0.44),
+    hsl(var(--border) / 0.12),
+    transparent
+  );
+  content: "";
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.automata-rule-equation::after {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--primary) / 0.46);
+  content: "";
+  height: 0.45rem;
+  left: -0.25rem;
+  position: absolute;
+  top: -0.25rem;
+  width: 0.45rem;
+}
+
+.automata-rule-equation-meta {
+  align-items: center;
+  color: hsl(var(--primary) / 0.72);
+  display: flex;
+  font-size: 0.5625rem;
+  gap: 1rem;
+  justify-content: space-between;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.automata-rule-equation-formula {
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
+}
+
+.automata-rule-equation-formula .katex-display {
+  margin: 0;
+  text-align: left;
+}
+
+.automata-rule-equation-formula .katex {
+  color: hsl(var(--foreground));
+  font-size: 0.78rem;
 }
 
 .automata-specimen-control {
@@ -50,13 +116,15 @@
 .automata-specimen-formula {
   bottom: 0.5rem;
   color: hsl(var(--primary));
-  font-size: 0.625rem;
+  font-size: 0.5rem;
   font-style: italic;
   left: 0.5rem;
   opacity: 0.38;
   pointer-events: none;
   position: absolute;
+  right: 0.5rem;
   transition: opacity 180ms ease;
+  white-space: nowrap;
 }
 
 .automata-specimen-control:hover .automata-specimen-formula,
@@ -138,4 +206,27 @@
 
 .automata-specimen-tooltip dd {
   margin: 0;
+}
+
+@media (min-width: 640px) {
+  .automata-rule-equation-formula .katex {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .automata-rule-equation {
+    max-width: min(21rem, calc(100vw - 2rem));
+    width: min(21rem, calc(100vw - 2rem));
+  }
+
+  .automata-rule-equation-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .automata-rule-equation-formula .katex {
+    font-size: 0.72rem;
+  }
 }

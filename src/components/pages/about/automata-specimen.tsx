@@ -1,5 +1,6 @@
 import katex from "katex";
 
+import { AutomataRuleEquation } from "./automata-rule-equation";
 import { useSpecimenController } from "./specimen/use-specimen-controller";
 import {
   SPECIMEN_CELL_SIZE,
@@ -8,6 +9,13 @@ import {
   figureLabel,
 } from "./specimen/specimen-species";
 
+/**
+ * Interactive mini-canvas that cycles through named Life specimens.
+ *
+ * @remarks
+ * The surrounding control is marked as an automata blocker so the full-screen
+ * background masks a readable area around the specimen.
+ */
 export function AutomataSpecimen() {
   const specimen = useSpecimenController();
   const { species } = specimen;
@@ -75,6 +83,7 @@ export function AutomataSpecimen() {
           </div>
         ) : null}
       </div>
+      <AutomataRuleEquation />
     </div>
   );
 }
