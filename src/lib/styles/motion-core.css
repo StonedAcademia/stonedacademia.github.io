@@ -200,11 +200,12 @@
   vertical-align: baseline;     /* prevent inline-block from shifting line height */
   opacity: calc(1 - var(--char-density, 0) * 0.5);
   filter: hue-rotate(var(--char-hue-shift, 0deg));
-  transition: opacity 300ms ease, filter 300ms ease;
+  transition: opacity 300ms ease, filter 300ms ease, color 300ms ease;
 }
 
 .automata-collision {
   animation: automata-scale-pulse 500ms ease-out forwards;
+  color: hsl(var(--primary));
   transform-origin: center bottom;
 }
 
