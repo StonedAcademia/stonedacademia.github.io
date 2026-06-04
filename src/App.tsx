@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from "react";
 import { AboutPage } from "@/components/pages/about-page";
 import { BlogIndexPage } from "@/components/pages/blog-index-page";
 import { BlogPage } from "@/components/pages/blog-page";
+import { ContactPage } from "@/components/pages/contact-page";
 import { NotFoundPage } from "@/components/pages/not-found-page";
 import { SiteHeader } from "@/components/shell/site-header";
 import { ThemeSwitcher } from "@/components/shell/theme-switcher";
@@ -24,6 +25,8 @@ export default function App() {
 
   if (pathname === "/") {
     page = <AboutPage navigate={navigate} sortedPosts={posts} />;
+  } else if (pathname === "/contact" || pathname === "/contact/") {
+    page = <ContactPage />;
   } else if (blogRoute.isIndex) {
     page = <BlogIndexPage navigate={navigate} sortedPosts={posts} />;
   } else if (activePost) {
@@ -35,8 +38,8 @@ export default function App() {
   return (
     <>
       <ThemeSwitcher setTheme={setTheme} theme={theme} />
-      <main className="mx-auto min-h-screen w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
-        <SiteHeader navigate={navigate} />
+      <main className="motion-app-shell mx-auto min-h-screen w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
+        <SiteHeader navigate={navigate} pathname={pathname} />
         {page}
       </main>
     </>
