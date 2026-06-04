@@ -11,7 +11,13 @@ function loadViz() {
   return vizInstance;
 }
 
-export function GraphvizBlock({ source }: { source: string }) {
+export function GraphvizBlock({
+  automataField,
+  source,
+}: {
+  automataField?: string;
+  source: string;
+}) {
   const graphRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string>();
 
@@ -48,7 +54,10 @@ export function GraphvizBlock({ source }: { source: string }) {
   }
 
   return (
-    <figure className="graphviz">
+    <figure
+      className="graphviz"
+      {...(automataField !== undefined ? { "data-automata-field": automataField } : {})}
+    >
       <div ref={graphRef} />
     </figure>
   );
