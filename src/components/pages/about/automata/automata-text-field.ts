@@ -49,13 +49,17 @@ export function refreshTextField(state: AutomataState) {
         );
       }
     } else {
-      // Element has no char spans (e.g. KaTeX equation): mask the element
-      // rect directly so cells don't flow through it, but skip emitters so
-      // gliders don't appear to originate from the element border.
       const rect = element.getBoundingClientRect();
 
       if (rect.width > 0 && rect.height > 0) {
         maskCharRect(state, rect);
+
+        if (
+          element.querySelector(".katex-html") !== null ||
+          element.querySelector("svg g.node") !== null
+        ) {
+          placeFieldEmitters(state, rect);
+        }
       }
     }
   }
