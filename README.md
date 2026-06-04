@@ -38,9 +38,9 @@ plus Graphviz diagrams in fenced `dot`, `graphviz`, or `gv` code blocks.
 ## commands
 
 ```bash
-npm install
-npm run dev
-npm run build
+bun install
+bun run dev
+bun run build
 ```
 
 The build script copies `dist/index.html` to `dist/404.html` so GitHub Pages can
