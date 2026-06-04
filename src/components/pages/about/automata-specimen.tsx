@@ -147,6 +147,7 @@ function drawSpecimen(
 
 export function AutomataSpecimen() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stateRef = useRef<AutomataState>(createSpecimenState());
   const speciesIndexRef = useRef(0);
   const [speciesIndex, setSpeciesIndex] = useState(0);
   const [canvasOpacity, setCanvasOpacity] = useState(1);
@@ -174,19 +175,19 @@ export function AutomataSpecimen() {
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const state = createSpecimenState();
-    seedSpecies(state, SPECIES[speciesIndexRef.current]);
+    stateRef.current = createSpecimenState();
+    seedSpecies(stateRef.current, SPECIES[speciesIndexRef.current]);
 
     let animationFrame = 0;
     let lastStep = 0;
 
     function animate(now: number) {
       if (!reducedMotion.matches && now - lastStep > STEP_INTERVAL_MS) {
-        stepSpecimen(state);
+        stepSpecimen(stateRef.current);
         lastStep = now;
       }
 
-      drawSpecimen(context!, state);
+      drawSpecimen(context!, stateRef.current);
       animationFrame = window.requestAnimationFrame(animate);
     }
 
@@ -242,33 +243,22 @@ export function AutomataSpecimen() {
     const rect = canvas.getBoundingClientRect();
     const bgCellSize = window.innerWidth < 680 ? 7 : 8;
     const cells: Array<{ x: number; y: number }> = [];
+    const state = stateRef.current;
 
-    const context = canvas.getContext("2d");
-
-    if (context) {
-      const state = createSpecimenState();
-      seedSpecies(state, SPECIES[speciesIndexRef.current]);
-
-      // run a few steps to get current live state (approximation — will be fixed in Task 5)
-      for (let i = 0; i < 10; i += 1) {
-        stepSpecimen(state);
+    for (let cellIndex = 0; cellIndex < state.grid.length; cellIndex += 1) {
+      if (!state.grid[cellIndex]) {
+        continue;
       }
 
-      for (let cellIndex = 0; cellIndex < state.grid.length; cellIndex += 1) {
-        if (!state.grid[cellIndex]) {
-          continue;
-        }
+      const localX = (cellIndex % COLS) * CELL_SIZE + CELL_SIZE / 2;
+      const localY = Math.floor(cellIndex / COLS) * CELL_SIZE + CELL_SIZE / 2;
+      const screenX = rect.left + localX;
+      const screenY = rect.top + localY;
 
-        const localX = (cellIndex % COLS) * CELL_SIZE + CELL_SIZE / 2;
-        const localY = Math.floor(cellIndex / COLS) * CELL_SIZE + CELL_SIZE / 2;
-        const screenX = rect.left + localX;
-        const screenY = rect.top + localY;
-
-        cells.push({
-          x: Math.floor(screenX / bgCellSize),
-          y: Math.floor(screenY / bgCellSize),
-        });
-      }
+      cells.push({
+        x: Math.floor(screenX / bgCellSize),
+        y: Math.floor(screenY / bgCellSize),
+      });
     }
 
     window.dispatchEvent(
