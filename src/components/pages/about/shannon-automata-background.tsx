@@ -7,10 +7,10 @@ import {
   seedField,
   stepField,
 } from "./automata/automata-evolution";
-import { createAutomataState, indexOf, viewportSize } from "./automata/automata-model";
+import { createAutomataState, viewportSize } from "./automata/automata-model";
 import { drawField } from "./automata/automata-renderer";
 import { refreshTextField } from "./automata/automata-text-field";
-import { AutomataTextBridge } from "./automata/automata-text-bridge";
+import { AutomataTextBridge } from "./automata/text/automata-text-bridge";
 
 const STEP_INTERVAL_MS = 82;
 
@@ -72,6 +72,7 @@ export function ShannonAutomataBackground() {
     function animate(now: number) {
       if (now - lastFieldRefresh > 700) {
         refreshTextField(state);
+        bridge.init(state);
         lastFieldRefresh = now;
       }
 
@@ -88,28 +89,14 @@ export function ShannonAutomataBackground() {
       animationFrame = window.requestAnimationFrame(animate);
     }
 
-    function handleInject(event: Event) {
-      const { cells } = (event as CustomEvent<{ cells: Array<{ x: number; y: number }> }>).detail;
-
-      for (const cell of cells) {
-        const cellIndex = indexOf(state, cell.x, cell.y);
-
-        if (!state.mask[cellIndex]) {
-          state.grid[cellIndex] = 1;
-        }
-      }
-    }
-
     resizeCanvas();
     animationFrame = window.requestAnimationFrame(animate);
     window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("automata:inject", handleInject);
     reducedMotion.addEventListener("change", resizeCanvas);
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener("automata:inject", handleInject);
       reducedMotion.removeEventListener("change", resizeCanvas);
       bridge.destroy();
     };
