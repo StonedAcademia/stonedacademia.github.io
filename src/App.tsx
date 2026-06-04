@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from "react";
 
 import { AboutPage } from "@/components/pages/about-page";
+import { BlogIndexPage } from "@/components/pages/blog-index-page";
 import { BlogPage } from "@/components/pages/blog-page";
 import { NotFoundPage } from "@/components/pages/not-found-page";
 import { SiteHeader } from "@/components/shell/site-header";
@@ -12,15 +13,19 @@ import { useTheme } from "@/lib/themes";
 export default function App() {
   const { pathname, navigate } = usePathname();
   const { theme, setTheme } = useTheme();
+  const blogRoute = useMemo(() => postSlugFromPath(pathname), [pathname]);
   const activePost = useMemo(() => {
-    const match = pathname.match(/^\/blog\/([^/]+)\.md$/);
-    return match ? posts.find((post) => post.slug === match[1]) : undefined;
-  }, [pathname]);
+    return blogRoute.slug
+      ? posts.find((post) => post.slug === blogRoute.slug)
+      : undefined;
+  }, [blogRoute.slug]);
 
   let page: ReactNode;
 
   if (pathname === "/") {
     page = <AboutPage navigate={navigate} sortedPosts={posts} />;
+  } else if (blogRoute.isIndex) {
+    page = <BlogIndexPage navigate={navigate} sortedPosts={posts} />;
   } else if (activePost) {
     page = <BlogPage navigate={navigate} post={activePost} />;
   } else {
@@ -36,4 +41,14 @@ export default function App() {
       </main>
     </>
   );
+}
+
+function postSlugFromPath(pathname: string) {
+  if (pathname === "/blog" || pathname === "/blog/") {
+    return { isIndex: true, slug: undefined };
+  }
+
+  const match = pathname.match(/^\/blog\/([^/.]+)(?:\.md)?\/?$/);
+
+  return { isIndex: false, slug: match?.[1] };
 }

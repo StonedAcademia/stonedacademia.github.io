@@ -13,7 +13,9 @@ export function SiteHeader({ navigate }: { navigate: Navigate }) {
         </span>
       </TextLink>
       <span>/</span>
-      <span>blog/*.md</span>
+      <TextLink href="/blog" navigate={navigate}>
+        blog
+      </TextLink>
     </header>
   );
 }
