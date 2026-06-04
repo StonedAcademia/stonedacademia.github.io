@@ -4,7 +4,7 @@ import remarkMath from "remark-math";
 
 import { AutomataSpecimen } from "@/components/pages/about/automata-specimen";
 import { ShannonAutomataBackground } from "@/components/pages/about/shannon-automata-background";
-import { PretextText } from "@/lib/pretext/pretext-text";
+import { AutomataText } from "@/components/pages/about/automata-text";
 
 const aboutEquation = String.raw`$$
 \begin{aligned}
@@ -28,23 +28,18 @@ export function AboutPage() {
             {aboutEquation}
           </ReactMarkdown>
         </div>
-        <PretextText
+        <AutomataText
           animation="heading"
           as="h1"
           className="automata-text-field max-w-2xl text-2xl font-semibold leading-tight sm:text-3xl"
           data-automata-field="about"
           text="Welcome."
-        >
-          Welcome.
-        </PretextText>
-        <PretextText
+        />
+        <AutomataText
           className="automata-text-field max-w-2xl text-sm leading-7 text-muted-foreground"
           data-automata-field="about"
           text="I hope to share my ideas, thoughts, and works in an attempt to articulate my ideas neatly."
-        >
-          I hope to share my ideas, thoughts, and works in an attempt to
-          articulate my ideas neatly.
-        </PretextText>
+        />
         <AutomataSpecimen />
       </div>
     </section>
