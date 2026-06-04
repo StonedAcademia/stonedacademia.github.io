@@ -14,6 +14,7 @@ type CharEntry = {
 export class AutomataTextBridge {
   private chars: CharEntry[] = [];
   private edgeLookup: Map<number, number> = new Map();
+  private pendingTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
   init(state: AutomataState): void {
     this.chars = [];
@@ -148,6 +149,13 @@ export class AutomataTextBridge {
     this.updateCollisions(state, tick);
   }
 
+  destroy(): void {
+    for (const id of this.pendingTimeouts) {
+      clearTimeout(id);
+    }
+    this.pendingTimeouts.clear();
+  }
+
   private updateFeedback(state: AutomataState): void {
     for (const char of this.chars) {
       const { cellWindowX1, cellWindowY1, cellWindowX2, cellWindowY2, element } = char;
@@ -199,9 +207,11 @@ export class AutomataTextBridge {
       void char.element.offsetWidth; // force reflow to restart the animation
       char.element.classList.add("automata-collision");
 
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
+        this.pendingTimeouts.delete(timeoutId);
         char.element.classList.remove("automata-collision");
       }, 500);
+      this.pendingTimeouts.add(timeoutId);
     }
   }
 }
