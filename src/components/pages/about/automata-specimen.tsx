@@ -200,6 +200,7 @@ export function AutomataSpecimen() {
 
   // species cycling — auto-advances every CYCLE_INTERVAL_MS
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const timer = setInterval(() => {
@@ -207,11 +208,18 @@ export function AutomataSpecimen() {
         return;
       }
 
+      if (reducedMotion.matches) {
+        // advance species instantly, no fade
+        const next = (speciesIndexRef.current + 1) % SPECIES.length;
+        speciesIndexRef.current = next;
+        setSpeciesIndex(next);
+        return;
+      }
+
       setCanvasOpacity(0);
 
       fadeTimeout = setTimeout(() => {
         if (dissolvedRef.current) {
-          // click happened during fade — cancel this transition, click handler owns species advancement
           setCanvasOpacity(1);
           return;
         }
@@ -265,6 +273,9 @@ export function AutomataSpecimen() {
       new CustomEvent("automata:inject", { detail: { cells } }),
     );
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const dissolveDuration = reducedMotion.matches ? 0 : DISSOLVE_DURATION_MS;
+
     dissolvedRef.current = true;
     setDissolved(true);
 
@@ -274,7 +285,7 @@ export function AutomataSpecimen() {
       setSpeciesIndex(next);
       setDissolved(false);
       dissolvedRef.current = false;
-    }, DISSOLVE_DURATION_MS + RESEED_DELAY_MS);
+    }, dissolveDuration + RESEED_DELAY_MS);
   }, []);
 
   useEffect(() => {
@@ -298,8 +309,16 @@ export function AutomataSpecimen() {
   // wrapperOpacity fades the entire box (border included) during dissolution.
   return (
     <div
+      aria-label={`Release ${species.name} into the field`}
       className="relative cursor-pointer"
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          handleClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
       style={{
         border: "1px solid hsl(var(--border))",
         borderRadius: "2px",
